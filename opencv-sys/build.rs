@@ -6,7 +6,8 @@ use std::path::PathBuf;
 
 #[cfg(unix)]
 fn opencv_link() {
-    println!("cargo:rustc-link-search=native=/usr/local/lib");
+    let link_search = env::var("OPENCV_LIB_DIR").unwrap_or("/usr/local/bin".to_owned());
+    println!("cargo:rustc-link-search=all={}", link_search);
     println!("cargo:rustc-link-lib=opencv_core");
     println!("cargo:rustc-link-lib=opencv_dnn");
     println!("cargo:rustc-link-lib=opencv_features2d");
@@ -14,10 +15,14 @@ fn opencv_link() {
     println!("cargo:rustc-link-lib=opencv_imgcodecs");
     println!("cargo:rustc-link-lib=opencv_imgproc");
     println!("cargo:rustc-link-lib=opencv_objdetect");
-    println!("cargo:rustc-link-lib=opencv_text");
     println!("cargo:rustc-link-lib=opencv_video");
     println!("cargo:rustc-link-lib=opencv_videoio");
-    println!("cargo:rustc-link-lib=opencv_xfeatures2d");
+    if cfg!(feature = "text") {
+        println!("cargo:rustc-link-lib=opencv_text");
+    }
+    if cfg!(feature = "contrib") {
+        println!("cargo:rustc-link-lib=opencv_xfeatures2d");
+    }
     if cfg!(feature = "cuda") {
         println!("cargo:rustc-link-lib=opencv_cudaobjdetect");
     }
@@ -63,12 +68,16 @@ fn main() {
         sources.push("cuda.cpp".to_string());
     }
 
-    cc::Build::new()
-        .flag("-std=c++11")
+    let mut builder = cc::Build::new();
+    builder.flag("-std=c++11")
         .warnings(false)
         .cpp(true)
-        .files(sources)
-        .compile("cv");
+        .files(sources);
+    env::var("OPENCV_INCLUDE_DIR").ok().map(|dir| {
+        eprintln!("Including dir {}", dir);
+        builder.include(dir)
+    });
+    builder.compile("cv");
 
     opencv_link();
 }

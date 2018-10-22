@@ -18,6 +18,8 @@ tempdir = "0.3"
 
 [features]
 cuda = ["opencv-sys/cuda"]
+contrib = []
+text = []
 
 [workspace]
 members = ["opencv-sys"]

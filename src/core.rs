@@ -126,7 +126,7 @@ impl Mat {
     }
 
     /// Creates an empty `Mat` struct from buffer.
-    pub fn new_from_bytes(rows: i32, cols: i32, t: CvType, buf: &mut [i8]) -> Mat {
+    pub fn new_from_bytes(rows: i32, cols: i32, t: CvType, buf: &mut [u8]) -> Mat {
         Mat {
             inner: unsafe { ffi::Mat_NewFromBytes(rows, cols, t as i32, to_byte_array(buf)) },
         }
@@ -568,7 +568,7 @@ pub fn min_max_loc(input: &Mat) -> (f64, f64, Point, Point) {
     (min, max, min_loc, max_loc)
 }
 
-fn to_byte_array(buf: &mut [i8]) -> ffi::ByteArray {
+fn to_byte_array(buf: &mut [u8]) -> ffi::ByteArray {
     ffi::ByteArray {
         data: buf.as_mut_ptr(),
         length: buf.len() as i32,
