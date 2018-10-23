@@ -181,6 +181,16 @@ impl Mat {
         Mat::from(unsafe { ffi::Mat_Reshape(self.inner, channel, rows) })
     }
 
+    /// Returns the size from the underlying Mat_Size call
+    pub fn size(&self) -> Vec<i32> {
+        let mut v = 0i32;
+        let mut iv = Box::new(ffi::IntVector {val: &mut v, length: 0});
+        unsafe {
+            ffi::Mat_Size(self.inner, &mut (*iv));
+            Vec::from_raw_parts(iv.val, iv.length as usize, iv.length as usize)
+        }
+    }
+
     /// Converts a Mat to half-precision floating point.
     ///
     /// This function converts FP32 (single precision floating point) from/to
