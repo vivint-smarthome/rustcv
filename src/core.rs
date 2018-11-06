@@ -594,3 +594,34 @@ fn from_byte_array(arr: &ffi::ByteArray) -> Vec<u8> {
         )
     }
 }
+
+/// A data structure of multiple Mat
+#[derive(Debug)]
+pub struct Mats {
+    pub(crate) inner: ffi::Mats
+}
+
+impl Drop for Mats {
+    fn drop(&mut self) {
+        unsafe { ffi::Mats_Close(self.inner) }
+    }
+}
+
+//impl Clone for Mat {
+//    fn clone(&self) -> Self {
+//        Mat {
+//            inner: unsafe { ffi::Mat_Clone(self.inner) },
+//        }
+//    }
+//}
+
+//pub fn Mats_get(mats: Mats, i: ::std::os::raw::c_int) -> Mat;
+impl Mats {
+
+    /// Gets the mat at the given index
+    pub fn get_mat(&self, index: i32) -> Mat {
+        Mat {
+            inner: unsafe { ffi::Mats_get(self.inner, index) }
+        }
+    }
+}
