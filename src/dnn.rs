@@ -3,7 +3,6 @@
 use opencv_sys as ffi;
 use core::{Mat, Scalar, Size, Mats};
 use std::ffi::CString;
-use std::rc::*;
 use Error;
 
 /// Cascade classifier class for object detection.
@@ -75,16 +74,19 @@ impl Net {
         for s in output_names.into_iter() {
             output_names_.push(CString::new(s).unwrap());
         }
-        let mut bytes:Vec<u8> = Vec::new();
-        for s in output_names_ {
-            let mut v = s.as_bytes_with_nul().to_vec();
-            bytes.append(&mut v);
-        }
-        let names = ffi::CStrings{strs: bytes.as_mut_ptr() as *mut *const u8, length: total_length as i32};
+        let mut output_names2: Vec<*const u8> = output_names_.iter().map(|s|{s.as_ptr()}).collect();
+        let names = ffi::CStrings{strs: output_names2.as_mut_ptr(), length: total_length as i32};
 
+//        let mut bytes:Vec<u8> = Vec::new();
+//        for s in output_names_ {
+//            let mut v = s.as_bytes_with_nul().to_vec();
+//            bytes.append(&mut v);
+//        }
+//        let names = ffi::CStrings{strs: bytes.as_mut_ptr() as *mut *const u8, length: total_length as i32};
+//pub strs: *mut *const ::std::os::raw::c_char,
 
-        let mut mats_:Vec<Mat> = Vec::with_capacity(total_length);
-        let mut mats = ffi::Mats{mats: mats_.as_mut_ptr() as *mut *mut ::std::os::raw::c_void, length: total_length as i32};
+        let mut mats_: Vec<*mut ::std::os::raw::c_void> = Vec::with_capacity(total_length);
+        let mut mats = ffi::Mats{mats: mats_.as_mut_ptr(), length: total_length as i32};
         //let mut mats_ptr : *mut ffi::Mats = &mats;
         unsafe{ffi::Net_ForwardLayers(self.inner, &mut mats, names)};
         //ffi::Net_ForwardLayers(self.inner, mats_ptr, names);
