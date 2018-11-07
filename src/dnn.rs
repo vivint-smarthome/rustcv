@@ -12,6 +12,16 @@ pub struct Net {
 }
 
 impl Net {
+    /// Reads a model and determines what type it is based on its extension.
+    /// Supported models are Caffe (.caffemodel, .prototxt), TensorFlow (.pb, .pbtxt),
+    /// Torch (.t7|.net, ""), Darknet (.weights, .cfg), and OpenVINO (.bin, .xml)
+    pub fn from_files(model: &str, config: &str) -> Result<Self, Error> {
+        let model = CString::new(model)?;
+        let config = CString::new(config)?;
+        Ok(Net {
+            inner: unsafe { ffi::Net_ReadNet(model.as_ptr(), config.as_ptr())}
+        })
+    }
     /// Reads a network model stored in Caffe framework's format.
     pub fn from_caffe(prototxt: &str, model: &str) -> Result<Self, Error> {
         let prototxt = CString::new(prototxt)?;
