@@ -5,6 +5,35 @@ use core::{Mat, Scalar, Size, Mats};
 use std::ffi::CString;
 use Error;
 
+/// Backends available for use by DNN
+#[derive(Debug)]
+#[allow(missing_copy_implementations)]
+pub enum DnnBackend {
+    /// Default
+    DnnBackendDefault,
+    /// Halide gpu
+    DnnBackendHalide,
+    /// Inference engine
+    DnnBackendInferenceEngine,
+    /// opencv optimized
+    DnnBackendOpencv,
+}
+
+
+/// Targets available for use with DNN
+#[derive(Debug)]
+#[allow(missing_copy_implementations)]
+pub enum DnnTarget {
+    /// On cpu
+    DnnTargetCpu,
+    /// gpu using opencl
+    DnnTargetOpencl,
+    /// gpu using opencl with fp16
+    DnnTargetOpenclFp16,
+    /// myriad gpu
+    DnnTargetMyriad,
+}
+
 /// Cascade classifier class for object detection.
 #[derive(Debug)]
 pub struct Net {
@@ -77,14 +106,6 @@ impl Net {
         let mut output_names2: Vec<*const u8> = output_names_.iter().map(|s|{s.as_ptr()}).collect();
         let names = ffi::CStrings{strs: output_names2.as_mut_ptr(), length: total_length as i32};
 
-//        let mut bytes:Vec<u8> = Vec::new();
-//        for s in output_names_ {
-//            let mut v = s.as_bytes_with_nul().to_vec();
-//            bytes.append(&mut v);
-//        }
-//        let names = ffi::CStrings{strs: bytes.as_mut_ptr() as *mut *const u8, length: total_length as i32};
-//pub strs: *mut *const ::std::os::raw::c_char,
-
         let mut mats_: Vec<*mut ::std::os::raw::c_void> = Vec::with_capacity(total_length);
         let mut mats = ffi::Mats{mats: mats_.as_mut_ptr(), length: total_length as i32};
         //let mut mats_ptr : *mut ffi::Mats = &mats;
@@ -95,6 +116,33 @@ impl Net {
         })
     }
 
+    /// Set the desired backend
+    pub fn set_preferable_backend(&self, backend: DnnBackend) {
+        let bkend: ::std::os::raw::c_int = match  backend {
+            DnnBackend::DnnBackendDefault => 0,
+            DnnBackend::DnnBackendHalide => 1,
+            DnnBackend::DnnBackendInferenceEngine => 2,
+            DnnBackend::DnnBackendOpencv => 3,
+        };
+        unsafe {
+            ffi::Net_SetPreferableBackend(self.inner, bkend);
+        }
+
+    }
+
+    /// Set the target for the computation
+    pub fn set_preferable_target(&self, target: DnnTarget) {
+        let trgt: ::std::os::raw::c_int = match target {
+            DnnTarget::DnnTargetCpu => 0,
+            DnnTarget::DnnTargetMyriad => 3,
+            DnnTarget::DnnTargetOpencl => 1,
+            DnnTarget::DnnTargetOpenclFp16 => 2,
+        };
+        unsafe {
+            ffi::Net_SetPreferableTarget(self.inner, trgt);
+        }
+
+    }
 
 }
 
