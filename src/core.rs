@@ -627,6 +627,6 @@ impl Mats {
 
     /// Gets the number of mats in the vector
     pub fn size(&self) -> i32 {
-        unsafe { self.inner.length }
+        self.inner.length
     }
 }
