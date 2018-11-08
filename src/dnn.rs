@@ -178,33 +178,4 @@ pub fn get_blob_size(blob: &Mat) -> Scalar {
     unsafe { ffi::Net_GetBlobSize(blob.inner) }
 }
 
-//pub fn get_mat(blob: ffi::Mats, index: i32) -> (ffi::Mats, Mat) {
-//    let rc_mats = Rc::new(blob);
-//    let get_mats = rc_mats.clone();
-//    let mat = ffi::Mats_get(get_mats, index);
-//    (rc_mats.try_unwrap().unwrap(), mat)
-//}
-
-//   /// Get the names of the output layers
-//   fn get_outputs_names(net : Net) -> Vec<String> {
-//       //  IntVector {
-//       //      val: *mut ::std::os::raw::c_int,
-//       //      length: ::std::os::raw::c_int,
-//       //      };
-//       //fn Net_GetUnconnectedOutLayers(net: Net, res: *mut IntVector);
-//       // pub fn Net_GetLayer(net: Net, layerid: ::std::os::raw::c_int) -> Layer;
-//       // pub fn Layer_OutputNameToIndex(
-//       // fn Layer_GetName(layer: Layer) -> *const ::std::os::raw::c_char;
-//       //let names : Vec<String> = Vec::new();
-//       //let out_layers : Vec<i32> = Vec::new();
-//       let out_layers : IntVector = IntVector{val: *mut ::std::os::raw::c_int, length: ::std::os::raw::c_int,};
-//       ffi::Net_GetUnconnectedOutLayers(net, &mut out_layers);
-//       let names = out_layers.iter().map(|i| {
-//         let layer = ffi::Net_GetLayer(net, i);
-//         let name = ffi::Layer_GetName(layer);
-//         name
-//       });
-//       names
-//   
-//   }
 
