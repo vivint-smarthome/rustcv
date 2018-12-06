@@ -1,6 +1,8 @@
 //! [Core data structures in OpenCV][opencv-core].
 //!
 //! [opencv-core]: https://docs.opencv.org/master/d0/de1/group__core.html
+#![allow(clippy::useless_attribute)]
+
 use opencv_sys as ffi;
 use num_traits::FromPrimitive;
 
@@ -44,7 +46,7 @@ pub use opencv_sys::KeyPoint;
 /// | CV_32F |  5 | 13 | 21 | 29 |   37 |   45 |   53 |   61 |
 /// | CV_64F |  6 | 14 | 22 | 30 |   38 |   46 |   54 |   62 |
 #[repr(C)]
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, FromPrimitive)]
 pub enum CvType {
     /// 8 bit unsigned, single channel (grey image)
     Cv8UC1 = 0,
@@ -99,7 +101,13 @@ pub enum BorderType {
 
 impl From<ffi::Mat> for Mat {
     fn from(inner: ffi::Mat) -> Mat {
-        Mat { inner: inner }
+        Mat { inner }
+    }
+}
+
+impl Default for Mat {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -407,6 +415,7 @@ pub fn bitwise_xor(src1: &Mat, src2: &Mat, dst: &mut Mat) {
 }
 
 /// A naive nearest neighbor finder.
+#[allow(clippy::too_many_arguments)]
 pub fn batch_distance(
     src1: &Mat,
     src2: &Mat,
@@ -499,7 +508,7 @@ pub fn cart_to_polar(x: &Mat, y: &Mat, magnitude: &mut Mat, angle: &mut Mat, use
 
 /// Comparison type.
 #[repr(C)]
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub enum CompareType {
     /// src1 is equal to src2.
     Eq = 0,
