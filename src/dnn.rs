@@ -6,8 +6,7 @@ use std::ffi::CString;
 use Error;
 
 /// Backends available for use by DNN
-#[derive(Debug)]
-#[allow(missing_copy_implementations)]
+#[derive(Debug, Copy, Clone)]
 pub enum DnnBackend {
     /// Default
     DnnBackendDefault,
@@ -21,8 +20,7 @@ pub enum DnnBackend {
 
 
 /// Targets available for use with DNN
-#[derive(Debug)]
-#[allow(missing_copy_implementations)]
+#[derive(Debug, Copy, Clone)]
 pub enum DnnTarget {
     /// On cpu
     DnnTargetCpu,

@@ -553,6 +553,7 @@ pub fn convert_scale_abs(src: &Mat, dst: &mut Mat, alpha: f64, beta: f64) {
 /// filtering functions based on it do (they extrapolate pixels on-fly), but
 /// what other more complex functions, including your own, may do to simplify
 /// image boundary handling.
+#[allow(clippy::too_many_arguments)]
 pub fn copy_make_border(
     src: &Mat,
     dst: &mut Mat,
@@ -597,7 +598,7 @@ fn to_byte_array(buf: &mut [u8]) -> ffi::ByteArray {
 fn from_byte_array(arr: &ffi::ByteArray) -> Vec<u8> {
     unsafe {
         Vec::from_raw_parts(
-            ::std::mem::transmute(arr.data),
+            arr.data,
             arr.length as usize,
             arr.length as usize,
         )

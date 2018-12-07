@@ -58,6 +58,7 @@ pub enum WindowProperty {
 
 impl Window {
     /// Creates a new named window.
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(name: &str, flag: WindowFlag) -> Result<Self, Error> {
         let s = CString::new(name)?;
         unsafe {
@@ -100,7 +101,7 @@ impl Window {
 
     /// Changes parameters of a window dynamically.
     pub fn set_property(&mut self, flag: WindowProperty, value: WindowFlag) {
-        unsafe { ffi::Window_SetProperty(self.name.as_ptr(), flag as i32, (value as i32) as f64) }
+        unsafe { ffi::Window_SetProperty(self.name.as_ptr(), flag as i32, f64::from(value as i32)) }
     }
 
     /// Changes Window name dynamically.

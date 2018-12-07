@@ -67,7 +67,7 @@ pub enum CvError {
 
 fn path_to_cstring<P: AsRef<Path>>(path: P) -> Result<CString, Error> {
     let path = path.as_ref();
-    let x = path.to_str().ok_or(CvError::InvalidPath(path.into()))?;
+    let x = path.to_str().ok_or_else(|| CvError::InvalidPath(path.into()))?;
     let result = CString::new(x)?;
     Ok(result)
 }

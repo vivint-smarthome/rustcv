@@ -253,6 +253,7 @@ pub fn laplacian(
 }
 
 /// Calculates the first x- or y- image derivative using Scharr operator.
+#[allow(clippy::too_many_arguments)]
 pub fn scharr(
     src: &Mat,
     dst: &mut Mat,
@@ -344,6 +345,7 @@ pub fn circle(img: &mut Mat, center: Point, radius: i32, color: Scalar, thicknes
 }
 
 /// Draws a simple or thick elliptic arc or fills an ellipse sector.
+#[allow(clippy::too_many_arguments)]
 pub fn ellipse(
     img: &mut Mat,
     center: Point,

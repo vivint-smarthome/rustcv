@@ -32,6 +32,12 @@ impl MSER {
     }
 }
 
+impl Default for MSER {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Class for extracting blobs from an image.
 ///
 /// The class implements a simple algorithm for extracting blobs from an image:
@@ -72,6 +78,12 @@ impl SimpleBlobDetector {
     pub fn detect(&self, src: &Mat) -> Vec<KeyPoint> {
         let keypoints = unsafe { ffi::SimpleBlobDetector_Detect(self.inner, src.inner) };
         get_keypoints(keypoints)
+    }
+}
+
+impl Default for SimpleBlobDetector {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

@@ -89,3 +89,9 @@ impl Drop for CascadeClassifier {
         unsafe { ffi::CascadeClassifier_Close(self.inner) }
     }
 }
+
+impl Default for CascadeClassifier {
+    fn default() -> Self {
+        Self::new()
+    }
+}
