@@ -42,7 +42,7 @@ fn generate_binding() {
         .header("wrapper.h")
         .generate()
         .expect("Unable to generate bindings")
-        .write_to_file(out_path.join("bindings.rs"))
+        .write_to_file(out_path.join("opencv-sys.rs"))
         .expect("Couldn't write bindings!");
 }
 
@@ -62,7 +62,7 @@ fn main() {
         "videoio",
     ];
 
-    let mut sources: Vec<String> = modules.iter().map(|m| source(m)).collect();
+    let mut sources: Vec<String> = modules.into_iter().map(source).collect();
 
     if cfg!(feature = "cuda") {
         sources.push("cuda.cpp".to_string());
