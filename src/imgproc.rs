@@ -1,7 +1,7 @@
 //! [Image Processing](https://docs.opencv.org/master/d7/dbd/group__imgproc.html)
 
 use opencv_sys as ffi;
-use core::{BorderType, Mat, Point, Rect, Scalar, Size};
+use crate::core::{BorderType, Mat, Point, Rect, Scalar, Size};
 
 fn to_points(curve: &mut [Point]) -> ffi::Points {
     ffi::Points {

@@ -4,7 +4,7 @@
 #![allow(clippy::useless_attribute)]
 
 use opencv_sys as ffi;
-use num_traits::FromPrimitive;
+use num_derive::FromPrimitive;
 
 /// The class `Mat` represents an n-dimensional dense numerical single-channel or multi-channel array.
 /// It can be used to store real or complex-valued vectors and matrices, grayscale or color images,
@@ -248,6 +248,7 @@ impl Mat {
     /// Returns the type for this Mat.
     pub fn cv_type(&self) -> CvType {
         let t = unsafe { ffi::Mat_Type(self.inner) };
+        use num_traits::cast::FromPrimitive;
         CvType::from_i32(t).expect("Unknown CvType")
     }
 

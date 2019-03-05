@@ -11,12 +11,7 @@
 #![deny(unused_import_braces)]
 #![deny(unused_qualifications)]
 
-#[macro_use]
-extern crate failure;
-#[macro_use]
-extern crate num_derive;
-extern crate num_traits;
-extern crate opencv_sys;
+use failure::*;
 
 use failure::Error;
 use std::path::{Path, PathBuf};

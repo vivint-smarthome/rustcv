@@ -8,5 +8,3 @@
 #include "gocv/version.h"
 #include "gocv/video.h"
 #include "gocv/videoio.h"
-
-#include "cuda.h"

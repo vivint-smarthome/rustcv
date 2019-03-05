@@ -2,7 +2,8 @@
 //!
 //! [opencv-imgcodecs]: http://docs.opencv.org/master/d4/da8/group__imgcodecs.html
 
-use core::Mat;
+use crate::core::Mat;
+use crate::path_to_cstring;
 use opencv_sys as ffi;
 use std::path::Path;
 use failure::Error;
@@ -68,7 +69,7 @@ pub enum ImageReadMode {
 /// - Radiance HDR - *.hdr, *.pic (always supported)
 /// - Raster and Vector geospatial data supported by Gdal (see the Notes section)
 pub fn imread<P: AsRef<Path>>(path: P, flags: ImageReadMode) -> Result<Mat, Error> {
-    let path = ::path_to_cstring(path)?;
+    let path = path_to_cstring(path)?;
     let path = path.as_ptr();
     let mat = unsafe { ffi::Image_IMRead(path, flags as i32) };
     Ok(mat.into())
@@ -136,7 +137,7 @@ pub enum ImageWritePngFlag {
 
 /// Writes an image to a file.
 pub fn imwrite<P: AsRef<Path>>(path: P, mat: &Mat) -> Result<bool, Error> {
-    let path = ::path_to_cstring(path)?;
+    let path = path_to_cstring(path)?;
     let path = path.as_ptr();
     let ret = unsafe { ffi::Image_IMWrite(path, mat.inner) };
     Ok(ret)
@@ -152,7 +153,7 @@ pub fn imwrite_with_params<P: AsRef<Path>>(
         val: flags.as_mut_ptr(),
         length: flags.len() as i32,
     };
-    let path = ::path_to_cstring(path)?;
+    let path = path_to_cstring(path)?;
     let path = path.as_ptr();
     let ret = unsafe { ffi::Image_IMWrite_WithParams(path, mat.inner, int_vector) };
     Ok(ret)

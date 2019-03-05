@@ -1,3 +1,6 @@
 [submodule "opencv-sys/gocv"]
 	path = opencv-sys/gocv
 	url = https://github.com/hybridgroup/gocv
+[submodule "opencv-sys/opencv"]
+	path = opencv-sys/opencv
+	url = ssh://git@github.com/opencv/opencv.git
