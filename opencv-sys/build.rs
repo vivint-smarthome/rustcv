@@ -36,8 +36,17 @@ fn opencv_link() {
 fn generate_binding() {
     let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
 
-    bindgen::builder()
-        .header("wrapper.h")
+    let headers = if cfg!(feature = "cuda") {
+        vec!["wrapper.h", "cuda.h"]
+    } else {
+        vec!["wrapper.h"]
+    };
+
+    let mut builder = bindgen::builder();
+    for h in headers {
+        builder = builder.header(h);
+    }
+    builder
         .generate()
         .expect("Unable to generate bindings")
         .write_to_file(out_path.join("opencv-sys.rs"))
@@ -57,8 +66,6 @@ fn build_opencv() {
             define("BUILD_PERF_TESTS", "OFF");
             define("BUILD_TESTS", "OFF");
             define("BUILD_DOCS", "OFF");
-            // Statically link the libraries
-            define("BUILD_SHARED_LIBS", "OFF");
             define("BUILD_opencv_python_bindings_generator", "OFF");
             define("BUILD_opencv_java_bindings_generator", "OFF");
             define("BUILD_opencv_stitching", "ON");
@@ -66,6 +73,7 @@ fn build_opencv() {
             define("BUILD_opencv_flann", "ON");
             define("BUILD_opencv_highgui", "ON");
             define("BUILD_opencv_video", "ON");
+            define("BUILD_opencv_videoio", "ON");
             define("BUILD_opencv_calib3d", "ON");
             define("BUILD_opencv_shape", "ON");
             define("BUILD_opencv_objdetect", "ON");
@@ -90,14 +98,23 @@ fn build_opencv() {
                 config.env(k, v);
             }
         });
+        // Statically link the libraries and override whatever may have been passed in.
+        defines.insert("BUILD_SHARED_LIBS".into(), "OFF".into());
         defines.into_iter().for_each(|(k, v)|{
             eprintln!("Defining {}={}", &k, &v);
             config.define(k, v);
         });
-        config.env("MAKEFLAGS", env::var("MAKEFLAGS").unwrap_or_else(|_|format!("-j{}", num_cpus::get() - 1)));
+        let install_dir = env::var("OUT_DIR").unwrap() + "/opencv";
+        std::fs::create_dir_all(&install_dir).expect("Unable to create opencv dir in OUT_DIR");
+        config.out_dir(&install_dir);
+        config.env("MAKEFLAGS",
+                   env::var("MAKEFLAGS")
+                     .unwrap_or_else(|_|format!("-j{}", env::var("NUM_JOBS").unwrap_or(1.to_string())))
+        );
         let dst = config.very_verbose(false).build();
         env::set_var(OPENCV_LIB_DIR, dst.join("lib"));
         env::set_var(OPENCV_INCLUDE_DIR, dst.join("include"));
+        println!("cargo:rustc-link-search=all={}", dst.join("share/OpenCV/3rdparty/lib").to_string_lossy());
     }
 }
 

@@ -10,10 +10,9 @@ edition = "2018"
 cc = "1.0"
 bindgen = "0.47"
 cmake = {version="0.1", optional=true}
-num_cpus = {version="1.0", optional=true}
 
 [features]
 cuda = []
 contrib = []
 text = []
-build-opencv = ["cmake", "num_cpus"]
+build-opencv = ["cmake"]
