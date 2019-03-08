@@ -12,7 +12,12 @@ bindgen = "0.47"
 cmake = {version="0.1", optional=true}
 
 [features]
+default = ["dnn", "features2d", "highgui", "imgcodecs", "imgproc", "objdetect"]
 cuda = []
-contrib = []
-text = []
+dnn = []
+features2d = []
+highgui = []
+imgcodecs = []
+imgproc = []
+objdetect = []
 build-opencv = ["cmake"]

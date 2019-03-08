@@ -15,9 +15,15 @@ opencv-sys = {path = "opencv-sys", default-features = false}
 tempdir = "0.3"
 
 [features]
+default = ["dnn", "features2d", "highgui", "imgcodecs", "imgproc", "objdetect"]
 cuda = ["opencv-sys/cuda"]
-contrib = ["opencv-sys/contrib"]
-text = ["opencv-sys/text"]
+dnn = ["opencv-sys/dnn"]
+features2d = ["opencv-sys/features2d"]
+highgui = ["opencv-sys/highgui"]
+imgcodecs = ["opencv-sys/imgcodecs"]
+imgproc = ["opencv-sys/imgproc"]
+objdetect = ["opencv-sys/objdetect"]
+
 build-opencv = ["opencv-sys/build-opencv"]
 
 [workspace]
