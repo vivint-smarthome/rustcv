@@ -36,23 +36,6 @@ fn opencv_link() {
         link_all_in_directory(&lib_dir)
             .unwrap_or_else(|e| eprintln!("Unable to read dir {}! {}", &lib_dir, e));
     }
-    //    println!("cargo:rustc-link-lib{}=opencv_dnn", link_static);
-    //    println!("cargo:rustc-link-lib{}=opencv_objdetect", link_static);
-    //    println!("cargo:rustc-link-lib{}=opencv_features2d", link_static);
-    //    println!("cargo:rustc-link-lib{}=opencv_highgui", link_static);
-    //    println!("cargo:rustc-link-lib{}=opencv_imgcodecs", link_static);
-    //    println!("cargo:rustc-link-lib{}=opencv_imgproc", link_static);
-    //    println!("cargo:rustc-link-lib{}=opencv_core", link_static);
-    //    println!("cargo:rustc-link-lib{}=tbb", link_static);
-    //    println!("cargo:rustc-link-lib{}=IlmImf", link_static);
-    //    println!("cargo:rustc-link-lib{}=libjasper", link_static);
-    //    println!("cargo:rustc-link-lib{}=libjpeg-turbo", link_static);
-    //    println!("cargo:rustc-link-lib{}=libwebp", link_static);
-    //    println!("cargo:rustc-link-lib{}=libpng", link_static);
-    //    println!("cargo:rustc-link-lib{}=libprotobuf", link_static);
-    //    println!("cargo:rustc-link-lib{}=libtiff", link_static);
-    //    println!("cargo:rustc-link-lib{}=tegra_hal", link_static);
-    //    println!("cargo:rustc-link-lib{}=zlib", link_static);
 }
 
 fn generate_binding<P: AsRef<Path>>(out_dir: P, modules: &[&str]) {
@@ -84,141 +67,138 @@ fn generate_binding<P: AsRef<Path>>(out_dir: P, modules: &[&str]) {
 fn build_opencv<P: AsRef<Path>>(_out_dir: P) {
     #[cfg(feature = "build-opencv")]
     {
-        use std::os::unix::ffi::OsStrExt;
         use std::collections::HashMap;
         let mut config = cmake::Config::new("opencv");
         let mut defines = HashMap::<String, String>::new();
         {
-            let mut define = |k: &str, v: &str| defines.insert(k.into(), v.into());
+            let mut d = |k: &str, v: &str| defines.insert(k.into(), v.into());
             static ON: &str = "ON";
             static OFF: &str = "OFF";
-            define("BUILD_ZLIB", ON);
-            define("WITH_PNG", OFF);
-
-            define("BUILD_PROTOBUF", OFF);
-            define("WITH_PROTOBUF", OFF);
-            define("BUILD_TBB", OFF);
-            define("WITH_TBB", OFF);
-            define("WITH_1394", OFF);
-            define("WITH_OPENGL", OFF);
-            define("WITH_OPENCL", OFF);
-            define("WITH_V4L", OFF);
-            define("WITH_LIBV4L", OFF);
-            define("WITH_GTK", OFF);
-            define("WITH_GDAL", OFF);
-            define("WITH_XINE", OFF);
-            define("WITH_FFMPEG", OFF);
-            define("BUILD_opencv_cudabgsegm", OFF);
-            define("BUILD_opencv_cudalegacy", OFF);
-            define("BUILD_opencv_cudafilters", OFF);
-            define("BUILD_opencv_cudastereo", OFF);
-            define("BUILD_opencv_cudafeatures2d", OFF);
-            define("BUILD_opencv_cudaoptflow", OFF);
-            define("BUILD_opencv_cudacodec", OFF);
-            define("BUILD_opencv_cudaimgproc", OFF);
-            define("BUILD_opencv_cudawarping", OFF);
-            define("BUILD_opencv_cudaarithm", OFF);
-            define("BUILD_opencv_cudaobjdetect", OFF);
-            define("BUILD_opencv_cudev", OFF);
-            define("BUILD_opencv_superres", OFF);
-            define("BUILD_opencv_ts", OFF);
-            define("BUILD_opencv_videostab", OFF);
-            define("BUILD_opencv_gapi", OFF);
-            define("BUILD_opencv_apps", OFF);
-            define("BUILD_opencv_world", OFF);
-            define("INSTALL_C_EXAMPLES", OFF);
-            define("BUILD_EXAMPLES", OFF);
-            define("BUILD_PERF_TESTS", OFF);
-            define("BUILD_TESTS", OFF);
-            define("BUILD_DOCS", OFF);
-            define("BUILD_opencv_python_bindings_generator", OFF);
-            define("BUILD_opencv_java_bindings_generator", OFF);
-            define("BUILD_opencv_stitching", OFF);
-            define("BUILD_opencv_photo", OFF);
-            define("BUILD_opencv_flann", OFF);
-            define("BUILD_opencv_video", OFF);
-            define("BUILD_opencv_videoio", OFF);
-            define("BUILD_opencv_calib3d", OFF);
-            define("BUILD_opencv_shape", OFF);
-            define("BUILD_opencv_ml", OFF);
-            define("BUILD_JAVA", OFF);
-            define("BUILD_IPP_IW", OFF);
-            define("BUILD_ITT", OFF);
-            define("BUILD_PACKAGE", OFF);
-            define("CPACK_BINARY_DEB", OFF);
-            define("CPACK_BINARY_FREEBSD", OFF);
-            define("CPACK_BINARY_IFW", OFF);
-            define("CPACK_BINARY_NSIS", OFF);
-            define("CPACK_BINARY_RPM", OFF);
-            define("CPACK_BINARY_STGZ", OFF);
-            define("CPACK_BINARY_TBZ2", OFF);
-            define("CPACK_BINARY_TGZ", OFF);
-            define("CPACK_BINARY_TXZ", OFF);
-            define("CPACK_BINARY_TZ", OFF);
-            define("CPACK_SOURCE_RPM", OFF);
-            define("CPACK_SOURCE_TBZ2", OFF);
-            define("CPACK_SOURCE_TGZ", OFF);
-            define("CPACK_SOURCE_TXZ", OFF);
-            define("CPACK_SOURCE_TZ", OFF);
-            define("CPACK_SOURCE_ZIP", OFF);
-            define("WITH_CUDA", OFF);
-            define("WITH_GSTREAMER", OFF);
-            define("WITH_GTK", OFF);
-            define("WITH_IMGCODEC_SUNRASTER", OFF);
-            define("WITH_IPP", OFF);
-            define("WITH_ITT", OFF);
-            define("WITH_JASPER", OFF);
-            define("WITH_OPENEXR", OFF);
-            define("WITH_PTHREADS_PF", OFF);
-            define("WITH_QUIRC", OFF);
-            define("WITH_TIFF", OFF);
-            define("WITH_V4L", OFF);
-            define("WITH_VTK", OFF);
-            define("WITH_WEBP", OFF);
-            define("ccitt", OFF);
-            define("logluv", OFF);
-            define("lzw", OFF);
-            define("mdi", OFF);
-            define("next", OFF);
-            define("old_jpeg", OFF);
-            define("opencv_dnn_PERF_CAFFE", OFF);
-            define("opencv_dnn_PERF_CLCAFFE", OFF);
-            define("packbits", OFF);
-            define("thunder", OFF);
+            d("BUILD_ZLIB", ON);
+            d("WITH_PNG", OFF);
+            d("BUILD_PROTOBUF", OFF);
+            d("WITH_PROTOBUF", OFF);
+            d("BUILD_TBB", OFF);
+            d("WITH_TBB", OFF);
+            d("WITH_1394", OFF);
+            d("WITH_OPENGL", OFF);
+            d("WITH_OPENCL", OFF);
+            d("WITH_V4L", OFF);
+            d("WITH_LIBV4L", OFF);
+            d("WITH_GTK", OFF);
+            d("WITH_GDAL", OFF);
+            d("WITH_XINE", OFF);
+            d("WITH_FFMPEG", OFF);
+            d("BUILD_opencv_cudabgsegm", OFF);
+            d("BUILD_opencv_cudalegacy", OFF);
+            d("BUILD_opencv_cudafilters", OFF);
+            d("BUILD_opencv_cudastereo", OFF);
+            d("BUILD_opencv_cudafeatures2d", OFF);
+            d("BUILD_opencv_cudaoptflow", OFF);
+            d("BUILD_opencv_cudacodec", OFF);
+            d("BUILD_opencv_cudaimgproc", OFF);
+            d("BUILD_opencv_cudawarping", OFF);
+            d("BUILD_opencv_cudaarithm", OFF);
+            d("BUILD_opencv_cudaobjdetect", OFF);
+            d("BUILD_opencv_cudev", OFF);
+            d("BUILD_opencv_superres", OFF);
+            d("BUILD_opencv_ts", OFF);
+            d("BUILD_opencv_videostab", OFF);
+            d("BUILD_opencv_gapi", OFF);
+            d("BUILD_opencv_apps", OFF);
+            d("BUILD_opencv_world", OFF);
+            d("INSTALL_C_EXAMPLES", OFF);
+            d("BUILD_EXAMPLES", OFF);
+            d("BUILD_PERF_TESTS", OFF);
+            d("BUILD_TESTS", OFF);
+            d("BUILD_DOCS", OFF);
+            d("BUILD_opencv_python_bindings_generator", OFF);
+            d("BUILD_opencv_java_bindings_generator", OFF);
+            d("BUILD_opencv_stitching", OFF);
+            d("BUILD_opencv_photo", OFF);
+            d("BUILD_opencv_flann", OFF);
+            d("BUILD_opencv_video", OFF);
+            d("BUILD_opencv_videoio", OFF);
+            d("BUILD_opencv_calib3d", OFF);
+            d("BUILD_opencv_shape", OFF);
+            d("BUILD_opencv_ml", OFF);
+            d("BUILD_JAVA", OFF);
+            d("BUILD_ITT", OFF);
+            d("BUILD_PACKAGE", OFF);
+            d("CPACK_BINARY_DEB", OFF);
+            d("CPACK_BINARY_FREEBSD", OFF);
+            d("CPACK_BINARY_IFW", OFF);
+            d("CPACK_BINARY_NSIS", OFF);
+            d("CPACK_BINARY_RPM", OFF);
+            d("CPACK_BINARY_STGZ", OFF);
+            d("CPACK_BINARY_TBZ2", OFF);
+            d("CPACK_BINARY_TGZ", OFF);
+            d("CPACK_BINARY_TXZ", OFF);
+            d("CPACK_BINARY_TZ", OFF);
+            d("CPACK_SOURCE_RPM", OFF);
+            d("CPACK_SOURCE_TBZ2", OFF);
+            d("CPACK_SOURCE_TGZ", OFF);
+            d("CPACK_SOURCE_TXZ", OFF);
+            d("CPACK_SOURCE_TZ", OFF);
+            d("CPACK_SOURCE_ZIP", OFF);
+            d("WITH_CUDA", OFF);
+            d("WITH_GSTREAMER", OFF);
+            d("WITH_GTK", OFF);
+            d("WITH_IMGCODEC_SUNRASTER", OFF);
+            d("WITH_IPP", OFF);
+            d("WITH_ITT", OFF);
+            d("WITH_JASPER", OFF);
+            d("WITH_OPENEXR", OFF);
+            d("WITH_PTHREADS_PF", OFF);
+            d("WITH_QUIRC", OFF);
+            d("WITH_TIFF", OFF);
+            d("WITH_V4L", OFF);
+            d("WITH_VTK", OFF);
+            d("WITH_WEBP", OFF);
+            d("ccitt", OFF);
+            d("logluv", OFF);
+            d("lzw", OFF);
+            d("mdi", OFF);
+            d("next", OFF);
+            d("old_jpeg", OFF);
+            d("opencv_dnn_PERF_CAFFE", OFF);
+            d("opencv_dnn_PERF_CLCAFFE", OFF);
+            d("packbits", OFF);
+            d("thunder", OFF);
 
             // Default these to off. They get turned on based on features.
-            define("BUILD_opencv_imgproc", OFF);
-            define("BUILD_opencv_imgcodecs", OFF);
-            define("BUILD_opencv_highgui", OFF);
-            define("BUILD_opencv_objdetect", OFF);
-            define("BUILD_opencv_dnn", OFF);
-            define("BUILD_opencv_features2d", OFF);
+            d("BUILD_opencv_imgproc", OFF);
+            d("BUILD_opencv_imgcodecs", OFF);
+            d("BUILD_opencv_highgui", OFF);
+            d("BUILD_opencv_objdetect", OFF);
+            d("BUILD_opencv_dnn", OFF);
+            d("BUILD_opencv_features2d", OFF);
 
             if cfg!(feature = "imgproc") {
-                define("BUILD_opencv_imgproc", ON);
+                d("BUILD_opencv_imgproc", ON);
             }
             if cfg!(feature = "imgcodecs") {
-                define("BUILD_opencv_imgcodecs", ON);
+                d("BUILD_opencv_imgcodecs", ON);
             }
             if cfg!(feature = "highgui") {
-                define("BUILD_opencv_highgui", ON);
+                d("BUILD_opencv_highgui", ON);
             }
             if cfg!(feature = "objdetect") {
-                define("BUILD_opencv_objdetect", ON);
+                d("BUILD_opencv_objdetect", ON);
             }
             if cfg!(feature = "dnn") {
-                define("BUILD_opencv_dnn", ON);
-                define("BUILD_PROTOBUF", ON);
-                define("WITH_PROTOBUF", ON);
-                define("OPENCV_DNN_OPENCL", OFF);
+                d("BUILD_opencv_dnn", ON);
+                d("BUILD_PROTOBUF", ON);
+                d("WITH_PROTOBUF", ON);
+                d("OPENCV_DNN_OPENCL", OFF);
             }
             if cfg!(feature = "features2d") {
-                define("BUILD_opencv_features2d", ON);
+                d("BUILD_opencv_features2d", ON);
             }
             if cfg!(feature = "cuda") {
-                define("BUILD_opencv_cudaobjdetect", ON);
+                d("BUILD_opencv_cudaobjdetect", ON);
             }
-            define("BUILD_opencv_core", ON);
+            d("BUILD_opencv_core", ON);
         }
         let manifest_dir =
             env::var("CARGO_MANIFEST_DIR").expect("Cargo should provide manifest directory!");
@@ -260,41 +240,13 @@ fn build_opencv<P: AsRef<Path>>(_out_dir: P) {
         let install_dir = _out_dir.as_ref().join("opencv");
         fs::create_dir_all(&install_dir).expect("Unable to create opencv dir in OUT_DIR");
         config.out_dir(&install_dir);
-        let dst = config.very_verbose(false).build();
+        //Profile needs to be Release otherwise you'll end up with some very slow execution
+        config.profile("Release");
+        let dst = config.build();
         env::set_var(OPENCV_LIB_DIR, dst.join("lib"));
         env::set_var(OPENCV_INCLUDE_DIR, dst.join("include"));
         let lib_3rdparty = dst.join("share/OpenCV/3rdparty/lib");
         env::set_var(format!("{}_3RDPARTY", OPENCV_LIB_DIR), &lib_3rdparty);
-        fs::read_dir(&lib_3rdparty)
-            .expect(&format!(
-                "Unable to open 3rdparty lib {}",
-                lib_3rdparty.to_string_lossy()
-            ))
-            .filter_map(|de| de.ok())
-            .filter(|de| de.file_name().as_bytes().starts_with(b"liblib"))
-            .for_each(|de| {
-                let liblib = de.path();
-                let liblib_name = liblib
-                    .file_name()
-                    .expect(&format!(
-                        "{} should have a filename!",
-                        liblib.to_string_lossy()
-                    ))
-                    .to_string_lossy();
-                let lib_name = &liblib_name[3..];
-                let lib = liblib
-                    .parent()
-                    .expect(&format!(
-                        "{} should have a parent!",
-                        liblib.to_string_lossy()
-                    ))
-                    .join(&lib_name);
-                fs::rename(&liblib, &lib).expect(&format!(
-                    "Unable to rename {} to {}",
-                    liblib.to_string_lossy(),
-                    lib.to_string_lossy()
-                ));
-            })
     }
 }
 
