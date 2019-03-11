@@ -18,13 +18,18 @@ use std::path::{Path, PathBuf};
 use std::ffi::CString;
 
 pub mod core;
+#[cfg(feature = "dnn")]
 pub mod dnn;
+#[cfg(feature = "features2d")]
 pub mod features2d;
+#[cfg(feature = "highgui")]
 pub mod highgui;
+#[cfg(feature = "imgcodecs")]
 pub mod imgcodecs;
+#[cfg(feature = "imgproc")]
 pub mod imgproc;
+#[cfg(feature = "objedetect")]
 pub mod objdetect;
-
 #[cfg(feature = "cuda")]
 pub mod cuda;
 

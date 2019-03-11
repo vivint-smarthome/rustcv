@@ -1,53 +1,58 @@
+#![cfg_attr(not(test), deny(warnings))]
+#![deny(unsafe_code)]
+
 use std::env;
-use std::path::{Path, PathBuf};
+use std::fs;
 use std::iter::once;
+use std::path::{Path, PathBuf};
 
 static OPENCV_LIB_DIR: &str = "OPENCV_LIB_DIR";
 static OPENCV_INCLUDE_DIR: &str = "OPENCV_INCLUDE_DIR";
-static OPENCV_LIB_DIR_3RDPARTY: &str = "OPENCV_LIB_DIR_3RDPARTY";
 
 #[cfg(unix)]
 fn opencv_link() {
-    use std::os::unix::ffi::OsStrExt;
-    for (k, lib_dir) in env::vars().filter(|(k, _)| k.starts_with(OPENCV_LIB_DIR)) {
-        println!("cargo:rustc-link-search=all={}", &lib_dir);
-        println!("cargo:rerun-if-env-changed={}", k);
-        match std::fs::read_dir(&lib_dir) {
-            Ok(read_dir) => {
-                for de in read_dir.filter_map(|f| f.ok()) {
-                    let p = de.path();
-                    if p.is_file() && p.file_name().map(|o| o.as_bytes().starts_with(b"lib")).unwrap_or(false) {
-                        if let Some(f) = p.file_name() {
-                            let f = f.to_string_lossy();
-                            if f.ends_with(".so") {
-                                println!("cargo:rustc-link-lib={}", &f[3..f.len() - 3]);
-                            } else if f.ends_with(".a") {
-                                println!("cargo:rustc-link-lib=static={}", &f[3..f.len() - 2]);
-                            }
-                        }
-                    }
+
+    fn link_all_in_directory(lib_dir: &str) -> Result<(), std::io::Error> {
+        use std::os::unix::ffi::OsStrExt;
+        fs::read_dir(&lib_dir)?
+            .filter_map(|de| de.ok())
+            .filter(|de| de.file_name().as_bytes().starts_with(b"lib"))
+            .filter(|de| de.path().is_file())
+            .for_each(|de| {
+                let name = de.file_name();
+                let f = name.to_string_lossy();
+                if f.ends_with(".so") {
+                    println!("cargo:rustc-link-lib={}", &f[3..f.len() - 3]);
+                } else if f.ends_with(".a") {
+                    println!("cargo:rustc-link-lib=static={}", &f[3..f.len() - 2]);
                 }
-            }
-            Err(e) => eprintln!("Unable to read dir {}! {}", &lib_dir, e),
-        }
+            });
+        Ok(())
     }
-//    println!("cargo:rustc-link-lib{}=opencv_dnn", link_static);
-//    println!("cargo:rustc-link-lib{}=opencv_objdetect", link_static);
-//    println!("cargo:rustc-link-lib{}=opencv_features2d", link_static);
-//    println!("cargo:rustc-link-lib{}=opencv_highgui", link_static);
-//    println!("cargo:rustc-link-lib{}=opencv_imgcodecs", link_static);
-//    println!("cargo:rustc-link-lib{}=opencv_imgproc", link_static);
-//    println!("cargo:rustc-link-lib{}=opencv_core", link_static);
-//    println!("cargo:rustc-link-lib{}=tbb", link_static);
-//    println!("cargo:rustc-link-lib{}=IlmImf", link_static);
-//    println!("cargo:rustc-link-lib{}=libjasper", link_static);
-//    println!("cargo:rustc-link-lib{}=libjpeg-turbo", link_static);
-//    println!("cargo:rustc-link-lib{}=libwebp", link_static);
-//    println!("cargo:rustc-link-lib{}=libpng", link_static);
-//    println!("cargo:rustc-link-lib{}=libprotobuf", link_static);
-//    println!("cargo:rustc-link-lib{}=libtiff", link_static);
-//    println!("cargo:rustc-link-lib{}=tegra_hal", link_static);
-//    println!("cargo:rustc-link-lib{}=zlib", link_static);
+
+    for (k, lib_dir) in env::vars().filter(|(k, _)| k.starts_with(OPENCV_LIB_DIR)) {
+        println!("cargo:rustc-link-search=native={}", &lib_dir);
+        println!("cargo:rerun-if-env-changed={}", k);
+        link_all_in_directory(&lib_dir)
+            .unwrap_or_else(|e| eprintln!("Unable to read dir {}! {}", &lib_dir, e));
+    }
+    //    println!("cargo:rustc-link-lib{}=opencv_dnn", link_static);
+    //    println!("cargo:rustc-link-lib{}=opencv_objdetect", link_static);
+    //    println!("cargo:rustc-link-lib{}=opencv_features2d", link_static);
+    //    println!("cargo:rustc-link-lib{}=opencv_highgui", link_static);
+    //    println!("cargo:rustc-link-lib{}=opencv_imgcodecs", link_static);
+    //    println!("cargo:rustc-link-lib{}=opencv_imgproc", link_static);
+    //    println!("cargo:rustc-link-lib{}=opencv_core", link_static);
+    //    println!("cargo:rustc-link-lib{}=tbb", link_static);
+    //    println!("cargo:rustc-link-lib{}=IlmImf", link_static);
+    //    println!("cargo:rustc-link-lib{}=libjasper", link_static);
+    //    println!("cargo:rustc-link-lib{}=libjpeg-turbo", link_static);
+    //    println!("cargo:rustc-link-lib{}=libwebp", link_static);
+    //    println!("cargo:rustc-link-lib{}=libpng", link_static);
+    //    println!("cargo:rustc-link-lib{}=libprotobuf", link_static);
+    //    println!("cargo:rustc-link-lib{}=libtiff", link_static);
+    //    println!("cargo:rustc-link-lib{}=tegra_hal", link_static);
+    //    println!("cargo:rustc-link-lib{}=zlib", link_static);
 }
 
 fn generate_binding<P: AsRef<Path>>(out_dir: P, modules: &[&str]) {
@@ -75,9 +80,11 @@ fn generate_binding<P: AsRef<Path>>(out_dir: P, modules: &[&str]) {
         .expect("Couldn't write bindings!");
 }
 
-fn build_opencv() {
+#[cfg(unix)]
+fn build_opencv<P: AsRef<Path>>(_out_dir: P) {
     #[cfg(feature = "build-opencv")]
     {
+        use std::os::unix::ffi::OsStrExt;
         use std::collections::HashMap;
         let mut config = cmake::Config::new("opencv");
         let mut defines = HashMap::<String, String>::new();
@@ -94,6 +101,7 @@ fn build_opencv() {
             define("WITH_TBB", OFF);
             define("WITH_1394", OFF);
             define("WITH_OPENGL", OFF);
+            define("WITH_OPENCL", OFF);
             define("WITH_V4L", OFF);
             define("WITH_LIBV4L", OFF);
             define("WITH_GTK", OFF);
@@ -133,15 +141,6 @@ fn build_opencv() {
             define("BUILD_opencv_calib3d", OFF);
             define("BUILD_opencv_shape", OFF);
             define("BUILD_opencv_ml", OFF);
-
-            // Default these to off. They get turned on based on features.
-            define("BUILD_opencv_imgproc", OFF);
-            define("BUILD_opencv_imgcodecs", OFF);
-            define("BUILD_opencv_highgui", OFF);
-            define("BUILD_opencv_objdetect", OFF);
-            define("BUILD_opencv_dnn", OFF);
-            define("BUILD_opencv_features2d", OFF);
-
             define("BUILD_JAVA", OFF);
             define("BUILD_IPP_IW", OFF);
             define("BUILD_ITT", OFF);
@@ -187,7 +186,14 @@ fn build_opencv() {
             define("packbits", OFF);
             define("thunder", OFF);
 
-            //TODO: feature gate these
+            // Default these to off. They get turned on based on features.
+            define("BUILD_opencv_imgproc", OFF);
+            define("BUILD_opencv_imgcodecs", OFF);
+            define("BUILD_opencv_highgui", OFF);
+            define("BUILD_opencv_objdetect", OFF);
+            define("BUILD_opencv_dnn", OFF);
+            define("BUILD_opencv_features2d", OFF);
+
             if cfg!(feature = "imgproc") {
                 define("BUILD_opencv_imgproc", ON);
             }
@@ -202,11 +208,12 @@ fn build_opencv() {
             }
             if cfg!(feature = "dnn") {
                 define("BUILD_opencv_dnn", ON);
+                define("BUILD_PROTOBUF", ON);
+                define("WITH_PROTOBUF", ON);
+                define("OPENCV_DNN_OPENCL", OFF);
             }
             if cfg!(feature = "features2d") {
                 define("BUILD_opencv_features2d", ON);
-                define("BUILD_PROTOBUF", ON);
-                define("WITH_PROTOBUF", ON);
             }
             if cfg!(feature = "cuda") {
                 define("BUILD_opencv_cudaobjdetect", ON);
@@ -216,8 +223,8 @@ fn build_opencv() {
         let manifest_dir =
             env::var("CARGO_MANIFEST_DIR").expect("Cargo should provide manifest directory!");
         let opencv_dir = manifest_dir + "/opencv";
-        const DEFINE: &str = "RUSTCV_OPENCV_DEFINE_";
-        const ENV: &str = "RUSTCV_OPENCV_ENV_";
+        static DEFINE: &str = "RUSTCV_OPENCV_DEFINE_";
+        static ENV: &str = "RUSTCV_OPENCV_ENV_";
         let target = env::var("TARGET")
             .expect("Cargo should provide TARGET")
             .replace("-", "_")
@@ -250,19 +257,48 @@ fn build_opencv() {
             eprintln!("Defining {}={}", &k, &v);
             config.define(k, v);
         });
-        let install_dir = env::var("OUT_DIR").unwrap() + "/opencv";
-        std::fs::create_dir_all(&install_dir).expect("Unable to create opencv dir in OUT_DIR");
+        let install_dir = _out_dir.as_ref().join("opencv");
+        fs::create_dir_all(&install_dir).expect("Unable to create opencv dir in OUT_DIR");
         config.out_dir(&install_dir);
         let dst = config.very_verbose(false).build();
         env::set_var(OPENCV_LIB_DIR, dst.join("lib"));
         env::set_var(OPENCV_INCLUDE_DIR, dst.join("include"));
-        env::set_var(
-            OPENCV_LIB_DIR_3RDPARTY,
-            dst.join("share/OpenCV/3rdparty/lib"),
-        );
+        let lib_3rdparty = dst.join("share/OpenCV/3rdparty/lib");
+        env::set_var(format!("{}_3RDPARTY", OPENCV_LIB_DIR), &lib_3rdparty);
+        fs::read_dir(&lib_3rdparty)
+            .expect(&format!(
+                "Unable to open 3rdparty lib {}",
+                lib_3rdparty.to_string_lossy()
+            ))
+            .filter_map(|de| de.ok())
+            .filter(|de| de.file_name().as_bytes().starts_with(b"liblib"))
+            .for_each(|de| {
+                let liblib = de.path();
+                let liblib_name = liblib
+                    .file_name()
+                    .expect(&format!(
+                        "{} should have a filename!",
+                        liblib.to_string_lossy()
+                    ))
+                    .to_string_lossy();
+                let lib_name = &liblib_name[3..];
+                let lib = liblib
+                    .parent()
+                    .expect(&format!(
+                        "{} should have a parent!",
+                        liblib.to_string_lossy()
+                    ))
+                    .join(&lib_name);
+                fs::rename(&liblib, &lib).expect(&format!(
+                    "Unable to rename {} to {}",
+                    liblib.to_string_lossy(),
+                    lib.to_string_lossy()
+                ));
+            })
     }
 }
 
+#[cfg(unix)]
 fn main() {
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
 
@@ -291,13 +327,14 @@ fn main() {
     }
 
     generate_binding(&out_dir, &modules);
-    build_opencv();
+    build_opencv(&out_dir);
 
-    let mut sources: Vec<String> = modules
+    let sources: Vec<String> = modules
         .into_iter()
         .map(|m| {
             for file in vec![format!("gocv/{}.cpp", m), format!("{}.cpp", m)] {
-                if Path::new(file).exists() {
+                if Path::new(&file).exists() {
+                    println!("cargo:rerun-if-changed={}", &file);
                     return file;
                 }
             }
@@ -319,4 +356,9 @@ fn main() {
     builder.compile("cv");
 
     opencv_link();
+}
+
+#[cfg(not(unix))]
+fn main() {
+    unimplemented!("This hasn't been implemented for non-*nix platforms yet!");
 }
