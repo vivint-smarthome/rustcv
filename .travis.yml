@@ -51,9 +51,9 @@ before_install:
   - sh -e /etc/init.d/xvfb start
 
 script:
+  - cargo fmt -- --write-mode=diff
   - cargo build
   - cargo build --features cuda
-  - cargo fmt -- --write-mode=diff
   - cargo test
   - cargo test -- --ignored
   - cargo doc -p opencv-sys --features cuda --no-deps

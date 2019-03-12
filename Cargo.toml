@@ -2,24 +2,29 @@
 name = "rustcv"
 version = "0.1.0"
 authors = ["Ben Zhang <benzh@cs.berkeley.edu>"]
+edition = "2018"
 
 [dependencies]
 bitflags = "1.0"
 failure = "0.1"
 num-derive = "0.2"
 num-traits = "0.2"
-
-[dependencies.opencv-sys]
-path = "opencv-sys"
-default-features = false
+opencv-sys = {path = "opencv-sys", default-features = false}
 
 [dev-dependencies]
 tempdir = "0.3"
 
 [features]
+default = ["dnn", "features2d", "highgui", "imgcodecs", "imgproc", "objdetect"]
 cuda = ["opencv-sys/cuda"]
-contrib = []
-text = []
+dnn = ["opencv-sys/dnn"]
+features2d = ["opencv-sys/features2d"]
+highgui = ["opencv-sys/highgui"]
+imgcodecs = ["opencv-sys/imgcodecs"]
+imgproc = ["opencv-sys/imgproc"]
+objdetect = ["opencv-sys/objdetect"]
+
+build-opencv = ["opencv-sys/build-opencv"]
 
 [workspace]
 members = ["opencv-sys"]

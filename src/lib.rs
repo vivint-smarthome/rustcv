@@ -11,25 +11,25 @@
 #![deny(unused_import_braces)]
 #![deny(unused_qualifications)]
 
-#[macro_use]
-extern crate failure;
-#[macro_use]
-extern crate num_derive;
-extern crate num_traits;
-extern crate opencv_sys;
+use failure::*;
 
 use failure::Error;
 use std::path::{Path, PathBuf};
 use std::ffi::CString;
 
 pub mod core;
+#[cfg(feature = "dnn")]
 pub mod dnn;
+#[cfg(feature = "features2d")]
 pub mod features2d;
+#[cfg(feature = "highgui")]
 pub mod highgui;
+#[cfg(feature = "imgcodecs")]
 pub mod imgcodecs;
+#[cfg(feature = "imgproc")]
 pub mod imgproc;
+#[cfg(feature = "objedetect")]
 pub mod objdetect;
-
 #[cfg(feature = "cuda")]
 pub mod cuda;
 

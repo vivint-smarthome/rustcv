@@ -2,9 +2,9 @@
 
 use opencv_sys as ffi;
 use std::ffi::CString;
-use Error;
-use CvError;
-use core::{Mat, Rect, Size};
+use failure::Error;
+use crate::CvError;
+use crate::core::{Mat, Rect, Size};
 use std::path::Path;
 
 /// Cascade classifier class for object detection.

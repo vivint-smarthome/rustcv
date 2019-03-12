@@ -1,9 +1,9 @@
 //! [Deep Neural Network](https://docs.opencv.org/master/d6/d0f/group__dnn.html).
 
 use opencv_sys as ffi;
-use core::{Mat, Scalar, Size, Mats};
+use crate::core::{Mat, Scalar, Size, Mats};
 use std::ffi::CString;
-use Error;
+use failure::Error;
 
 /// Backends available for use by DNN
 #[derive(Debug, Copy, Clone)]

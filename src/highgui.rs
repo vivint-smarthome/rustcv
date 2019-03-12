@@ -2,8 +2,8 @@
 
 use opencv_sys as ffi;
 use std::ffi::CString;
-use Error;
-use core::Mat;
+use failure::Error;
+use crate::core::Mat;
 
 /// Window is a wrapper around OpenCV's "HighGUI" named windows. While OpenCV
 /// was designed for use in full-scale applications and can be used within
