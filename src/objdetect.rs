@@ -1,10 +1,10 @@
 //! [Object Detection](https://docs.opencv.org/master/d5/d54/group__objdetect.html).
 
+use crate::core::{Mat, Rect, Size};
+use crate::CvError;
+use failure::Error;
 use opencv_sys as ffi;
 use std::ffi::CString;
-use failure::Error;
-use crate::CvError;
-use crate::core::{Mat, Rect, Size};
 use std::path::Path;
 
 /// Cascade classifier class for object detection.

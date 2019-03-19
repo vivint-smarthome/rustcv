@@ -3,8 +3,8 @@
 //! [opencv-core]: https://docs.opencv.org/master/d0/de1/group__core.html
 #![allow(clippy::useless_attribute)]
 
-use opencv_sys as ffi;
 use num_derive::FromPrimitive;
+use opencv_sys as ffi;
 
 /// The class `Mat` represents an n-dimensional dense numerical single-channel or multi-channel array.
 /// It can be used to store real or complex-valued vectors and matrices, grayscale or color images,
@@ -28,11 +28,11 @@ impl Drop for Mat {
     }
 }
 
-pub use opencv_sys::Scalar;
-pub use opencv_sys::Rect;
-pub use opencv_sys::Size;
-pub use opencv_sys::Point;
 pub use opencv_sys::KeyPoint;
+pub use opencv_sys::Point;
+pub use opencv_sys::Rect;
+pub use opencv_sys::Scalar;
+pub use opencv_sys::Size;
 
 /// Here is the `CvType` in an easy-to-read table.
 ///
@@ -192,7 +192,10 @@ impl Mat {
     /// Returns the size from the underlying Mat_Size call
     pub fn size(&self) -> Vec<i32> {
         let mut v = 0i32;
-        let mut iv = Box::new(ffi::IntVector {val: &mut v, length: 0});
+        let mut iv = Box::new(ffi::IntVector {
+            val: &mut v,
+            length: 0,
+        });
         unsafe {
             ffi::Mat_Size(self.inner, &mut (*iv));
             Vec::from_raw_parts(iv.val, iv.length as usize, iv.length as usize)
@@ -431,16 +434,8 @@ pub fn batch_distance(
 ) {
     unsafe {
         ffi::Mat_BatchDistance(
-            src1.inner,
-            src2.inner,
-            dist.inner,
-            dtype,
-            nidx.inner,
-            norm_type,
-            k,
-            mask.inner,
-            update,
-            crosscheck,
+            src1.inner, src2.inner, dist.inner, dtype, nidx.inner, norm_type, k, mask.inner,
+            update, crosscheck,
         )
     }
 }
@@ -591,25 +586,19 @@ pub fn min_max_loc(input: &Mat) -> (f64, f64, Point, Point) {
 
 fn to_byte_array(buf: &mut [u8]) -> ffi::ByteArray {
     ffi::ByteArray {
-        data: buf.as_mut_ptr(),
+        data: buf.as_mut_ptr() as *mut _,
         length: buf.len() as i32,
     }
 }
 
 fn from_byte_array(arr: &ffi::ByteArray) -> Vec<u8> {
-    unsafe {
-        Vec::from_raw_parts(
-            arr.data,
-            arr.length as usize,
-            arr.length as usize,
-        )
-    }
+    unsafe { Vec::from_raw_parts(arr.data as *mut _, arr.length as usize, arr.length as usize) }
 }
 
 /// A data structure of multiple Mat
 #[derive(Debug)]
 pub struct Mats {
-    pub(crate) inner: ffi::Mats
+    pub(crate) inner: ffi::Mats,
 }
 
 impl Drop for Mats {
@@ -628,11 +617,10 @@ impl Drop for Mats {
 
 //pub fn Mats_get(mats: Mats, i: ::std::os::raw::c_int) -> Mat;
 impl Mats {
-
     /// Gets the mat at the given index
     pub fn get_mat(&self, index: i32) -> Mat {
         Mat {
-            inner: unsafe { ffi::Mats_get(self.inner, index) }
+            inner: unsafe { ffi::Mats_get(self.inner, index) },
         }
     }
 

@@ -2,11 +2,11 @@
 //!
 //! [opencv-cuda]: https://docs.opencv.org/master/d1/d1a/namespacecv_1_1cuda.html
 
-use opencv_sys as ffi;
 use core::*;
-use {CvError, Error};
+use opencv_sys as ffi;
 use std::ffi::CString;
 use std::path::Path;
+use {CvError, Error};
 
 /// Base storage class for GPU memory with reference counting.
 ///

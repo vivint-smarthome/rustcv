@@ -11,7 +11,6 @@ static OPENCV_INCLUDE_DIR: &str = "OPENCV_INCLUDE_DIR";
 
 #[cfg(unix)]
 fn opencv_link() {
-
     fn link_all_in_directory(lib_dir: &str) -> Result<(), std::io::Error> {
         use std::os::unix::ffi::OsStrExt;
         fs::read_dir(&lib_dir)?
@@ -71,11 +70,23 @@ fn build_opencv<P: AsRef<Path>>(_out_dir: P) {
         let mut config = cmake::Config::new("opencv");
         let mut defines = HashMap::<String, String>::new();
         {
-            let mut d = |k: &str, v: &str| defines.insert(k.into(), v.into());
+            let mut d = |k: &str, v: &str| {
+                defines.insert(k.into(), v.into());
+            };
             static ON: &str = "ON";
             static OFF: &str = "OFF";
             d("BUILD_ZLIB", ON);
-            d("WITH_PNG", OFF);
+            d("BUILD_JPEG", ON);
+            d("WITH_JPEG", ON);
+            d("WITH_PNG", ON);
+            d("BUILD_PNG", ON);
+            d("WITH_LAPACK", ON);
+            d("WITH_OPENCLAMDBLAS", ON);
+            d("WITH_OPENCLAMDFFT", ON);
+            d("WITH_IMGCODEC_HDR", OFF);
+            d("WITH_IMGCODEC_PXM", OFF);
+            d("BUILD_TIFF", OFF);
+            d("BUILD_WEBP", OFF);
             d("BUILD_PROTOBUF", OFF);
             d("WITH_PROTOBUF", OFF);
             d("BUILD_TBB", OFF);
@@ -89,6 +100,9 @@ fn build_opencv<P: AsRef<Path>>(_out_dir: P) {
             d("WITH_GDAL", OFF);
             d("WITH_XINE", OFF);
             d("WITH_FFMPEG", OFF);
+            d("BUILD_OPENEXR", OFF);
+            d("OPENCV_GENERATE_PKGCONFIG", OFF);
+            d("OPENCV_GENERATE_SETUPVARS", OFF);
             d("BUILD_opencv_cudabgsegm", OFF);
             d("BUILD_opencv_cudalegacy", OFF);
             d("BUILD_opencv_cudafilters", OFF);
@@ -113,7 +127,11 @@ fn build_opencv<P: AsRef<Path>>(_out_dir: P) {
             d("BUILD_TESTS", OFF);
             d("BUILD_DOCS", OFF);
             d("BUILD_opencv_python_bindings_generator", OFF);
+            d("BUILD_opencv_python2", OFF);
+            d("BUILD_opencv_python3", OFF);
             d("BUILD_opencv_java_bindings_generator", OFF);
+            d("BUILD_IPP_IW", OFF);
+            d("BUILD_JASPER", OFF);
             d("BUILD_opencv_stitching", OFF);
             d("BUILD_opencv_photo", OFF);
             d("BUILD_opencv_flann", OFF);
@@ -174,29 +192,61 @@ fn build_opencv<P: AsRef<Path>>(_out_dir: P) {
             d("BUILD_opencv_dnn", OFF);
             d("BUILD_opencv_features2d", OFF);
 
+            // look at opencv/modules/<feature>/CmakeLists.txt to determine what is required
+            // Including a feature should automatically turn on all of its dependencies.
+            fn imgproc<F: FnMut(&str, &str)>(f: &mut F) {
+                f("BUILD_opencv_imgproc", ON);
+            }
+            fn imgcodecs<F: FnMut(&str, &str)>(f: &mut F) {
+                f("BUILD_opencv_imgcodecs", ON);
+            }
+            fn highgui<F: FnMut(&str, &str)>(f: &mut F) {
+                imgproc(f);
+                imgcodecs(f);
+                f("BUILD_opencv_highgui", ON);
+            };
+            fn objdetect<F: FnMut(&str, &str)>(f: &mut F) {
+                imgproc(f);
+                f("BUILD_opencv_objdetect", ON);
+                f("BUILD_opencv_calib3d", ON);
+            };
+            fn dnn<F: FnMut(&str, &str)>(f: &mut F) {
+                imgproc(f);
+                f("BUILD_opencv_dnn", ON);
+                f("BUILD_PROTOBUF", ON);
+                f("WITH_PROTOBUF", ON);
+                f("OPENCV_DNN_OPENCL", OFF);
+            };
+            fn features2d<F: FnMut(&str, &str)>(f: &mut F) {
+                imgproc(f);
+                f("BUILD_opencv_features2d", ON);
+            };
+            fn cuda<F: FnMut(&str, &str)>(f: &mut F) {
+                objdetect(f);
+                f("BUILD_opencv_cudaobjdetect", ON);
+                f("opencv_cudaarithm", ON);
+                f("opencv_cudawarping", ON);
+            };
             if cfg!(feature = "imgproc") {
-                d("BUILD_opencv_imgproc", ON);
+                imgproc(&mut d);
             }
             if cfg!(feature = "imgcodecs") {
-                d("BUILD_opencv_imgcodecs", ON);
+                imgcodecs(&mut d);
             }
             if cfg!(feature = "highgui") {
-                d("BUILD_opencv_highgui", ON);
+                highgui(&mut d)
             }
             if cfg!(feature = "objdetect") {
-                d("BUILD_opencv_objdetect", ON);
+                objdetect(&mut d);
             }
             if cfg!(feature = "dnn") {
-                d("BUILD_opencv_dnn", ON);
-                d("BUILD_PROTOBUF", ON);
-                d("WITH_PROTOBUF", ON);
-                d("OPENCV_DNN_OPENCL", OFF);
+                dnn(&mut d);
             }
             if cfg!(feature = "features2d") {
-                d("BUILD_opencv_features2d", ON);
+                features2d(&mut d);
             }
             if cfg!(feature = "cuda") {
-                d("BUILD_opencv_cudaobjdetect", ON);
+                cuda(&mut d);
             }
             d("BUILD_opencv_core", ON);
         }

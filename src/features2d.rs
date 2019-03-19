@@ -2,8 +2,8 @@
 //!
 //! [opencv-features2d]: https://docs.opencv.org/master/da/d9b/group__features2d.html
 
-use opencv_sys as ffi;
 use crate::core::*;
+use opencv_sys as ffi;
 
 /// Maximally stable extremal region extractor.
 #[derive(Debug)]

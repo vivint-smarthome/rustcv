@@ -1,9 +1,9 @@
 extern crate rustcv;
 use rustcv::core::*;
-use rustcv::imgcodecs::*;
 use rustcv::dnn::*;
-use std::path::PathBuf;
+use rustcv::imgcodecs::*;
 use std::env;
+use std::path::PathBuf;
 
 fn asset_path(f: &str) -> PathBuf {
     let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));

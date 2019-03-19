@@ -1,9 +1,9 @@
 //! [Deep Neural Network](https://docs.opencv.org/master/d6/d0f/group__dnn.html).
 
-use opencv_sys as ffi;
-use crate::core::{Mat, Scalar, Size, Mats};
-use std::ffi::CString;
+use crate::core::{Mat, Mats, Scalar, Size};
 use failure::Error;
+use opencv_sys as ffi;
+use std::ffi::CString;
 
 /// Backends available for use by DNN
 #[derive(Debug, Copy, Clone)]
@@ -17,7 +17,6 @@ pub enum DnnBackend {
     /// opencv optimized
     DnnBackendOpencv,
 }
-
 
 /// Targets available for use with DNN
 #[derive(Debug, Copy, Clone)]
@@ -39,7 +38,6 @@ pub struct Net {
 }
 
 impl Net {
-
     /// Reads a network model, supported models are:
     /// * Caffe (caffemodel, prototxt)
     /// * Tensorflow (pb, pbtxt)
@@ -48,7 +46,7 @@ impl Net {
     /// * Torch (t7)
     pub fn read_net(model: &str, config: &str) -> Result<Self, Error> {
         let model = CString::new(model)?;
-        let config= CString::new(config)?;
+        let config = CString::new(config)?;
 
         Ok(Net {
             inner: unsafe { ffi::Net_ReadNet(model.as_ptr(), config.as_ptr()) },
@@ -101,22 +99,29 @@ impl Net {
         for s in output_names.into_iter() {
             output_names_.push(CString::new(s).unwrap());
         }
-        let mut output_names2: Vec<*const u8> = output_names_.iter().map(|s|{s.as_ptr()}).collect();
-        let names = ffi::CStrings{strs: output_names2.as_mut_ptr(), length: total_length as i32};
+        let mut output_names2: Vec<*const u8> = output_names_
+            .iter()
+            .map(|s| s.as_ptr() as *const _)
+            .collect();
+        let names = ffi::CStrings {
+            strs: output_names2.as_mut_ptr() as *mut *const _,
+            length: total_length as i32,
+        };
 
         let mut mats_: Vec<*mut ::std::os::raw::c_void> = Vec::with_capacity(total_length);
-        let mut mats = ffi::Mats{mats: mats_.as_mut_ptr(), length: total_length as i32};
+        let mut mats = ffi::Mats {
+            mats: mats_.as_mut_ptr(),
+            length: total_length as i32,
+        };
         //let mut mats_ptr : *mut ffi::Mats = &mats;
-        unsafe{ffi::Net_ForwardLayers(self.inner, &mut mats, names)};
+        unsafe { ffi::Net_ForwardLayers(self.inner, &mut mats, names) };
         //ffi::Net_ForwardLayers(self.inner, mats_ptr, names);
-        Ok(Mats {
-            inner: mats
-        })
+        Ok(Mats { inner: mats })
     }
 
     /// Set the desired backend
     pub fn set_preferable_backend(&self, backend: DnnBackend) {
-        let bkend: ::std::os::raw::c_int = match  backend {
+        let bkend: ::std::os::raw::c_int = match backend {
             DnnBackend::DnnBackendDefault => 0,
             DnnBackend::DnnBackendHalide => 1,
             DnnBackend::DnnBackendInferenceEngine => 2,
@@ -125,7 +130,6 @@ impl Net {
         unsafe {
             ffi::Net_SetPreferableBackend(self.inner, bkend);
         }
-
     }
 
     /// Set the target for the computation
@@ -139,9 +143,7 @@ impl Net {
         unsafe {
             ffi::Net_SetPreferableTarget(self.inner, trgt);
         }
-
     }
-
 }
 
 /// Creates 4-dimensional blob from image. Optionally resizes and crops image
@@ -175,5 +177,3 @@ pub fn get_blob_channel(blob: &Mat, image_index: i32, channel_index: i32) -> Mat
 pub fn get_blob_size(blob: &Mat) -> Scalar {
     unsafe { ffi::Net_GetBlobSize(blob.inner) }
 }
-
-

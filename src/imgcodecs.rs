@@ -4,9 +4,9 @@
 
 use crate::core::Mat;
 use crate::path_to_cstring;
+use failure::Error;
 use opencv_sys as ffi;
 use std::path::Path;
-use failure::Error;
 
 /// [ImageReadMode][opencv-imread].
 ///

@@ -1,6 +1,6 @@
 extern crate rustcv;
-use rustcv::imgcodecs::*;
 use rustcv::features2d::*;
+use rustcv::imgcodecs::*;
 use std::path::PathBuf;
 
 fn asset_path(f: &str) -> PathBuf {

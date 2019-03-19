@@ -14,10 +14,12 @@
 use failure::*;
 
 use failure::Error;
-use std::path::{Path, PathBuf};
 use std::ffi::CString;
+use std::path::{Path, PathBuf};
 
 pub mod core;
+#[cfg(feature = "cuda")]
+pub mod cuda;
 #[cfg(feature = "dnn")]
 pub mod dnn;
 #[cfg(feature = "features2d")]
@@ -30,8 +32,6 @@ pub mod imgcodecs;
 pub mod imgproc;
 #[cfg(feature = "objedetect")]
 pub mod objdetect;
-#[cfg(feature = "cuda")]
-pub mod cuda;
 
 #[derive(Debug, Fail)]
 /// Custom errors.
@@ -67,7 +67,9 @@ pub enum CvError {
 
 fn path_to_cstring<P: AsRef<Path>>(path: P) -> Result<CString, Error> {
     let path = path.as_ref();
-    let x = path.to_str().ok_or_else(|| CvError::InvalidPath(path.into()))?;
+    let x = path
+        .to_str()
+        .ok_or_else(|| CvError::InvalidPath(path.into()))?;
     let result = CString::new(x)?;
     Ok(result)
 }

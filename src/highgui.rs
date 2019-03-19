@@ -1,9 +1,9 @@
 //! [High-level GUI](https://docs.opencv.org/master/d7/dfc/group__highgui.html).
 
+use crate::core::Mat;
+use failure::Error;
 use opencv_sys as ffi;
 use std::ffi::CString;
-use failure::Error;
-use crate::core::Mat;
 
 /// Window is a wrapper around OpenCV's "HighGUI" named windows. While OpenCV
 /// was designed for use in full-scale applications and can be used within
