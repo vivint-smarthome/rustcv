@@ -35,8 +35,11 @@ fn opencv_link() {
     for (k, lib_dir) in env::vars().filter(|(k, _)| k.starts_with(OPENCV_LIB_DIR)) {
         println!("cargo:rustc-link-search=native={}", &lib_dir);
         println!("cargo:rerun-if-env-changed={}", k);
-        link_all_in_directory(&lib_dir)
-            .unwrap_or_else(|e| eprintln!("Unable to read dir {}! {}", &lib_dir, e));
+        link_all_in_directory(&lib_dir).unwrap_or_else(|e| {
+            if !cfg!(feature = "build-opencv") {
+                eprintln!("Unable to read dir {}! {}", &lib_dir, e);
+            }
+        });
     }
 }
 
@@ -70,14 +73,14 @@ fn build_opencv<P: AsRef<Path>>(_out_dir: P) {
     #[cfg(feature = "build-opencv")]
     {
         use std::collections::HashMap;
+        static ON: &str = "ON";
+        static OFF: &str = "OFF";
         let mut config = cmake::Config::new("opencv");
         let mut defines = HashMap::<String, String>::new();
         {
             let mut d = |k: &str, v: &str| {
                 defines.insert(k.into(), v.into());
             };
-            static ON: &str = "ON";
-            static OFF: &str = "OFF";
             d("BUILD_ZLIB", ON);
             d("BUILD_JPEG", ON);
             d("WITH_JPEG", ON);
@@ -293,10 +296,15 @@ fn build_opencv<P: AsRef<Path>>(_out_dir: P) {
         //Profile needs to be Release otherwise you'll end up with some very slow execution
         config.profile("Release");
         let dst = config.build();
-        env::set_var(OPENCV_LIB_DIR, dst.join("lib"));
+
         env::set_var(OPENCV_INCLUDE_DIR, dst.join("include"));
-        let lib_3rdparty = dst.join("share/OpenCV/3rdparty/lib");
-        env::set_var(format!("{}_3RDPARTY", OPENCV_LIB_DIR), &lib_3rdparty);
+        let paths = vec!["lib", "lib64", "share/OpenCV/3rdparty/lib", "share/OpenCV/3rdparty/lib64"];
+        for p in paths {
+            let path = dst.join(p);
+            if path.exists() {
+                env::set_var(format!("{}_{}", OPENCV_LIB_DIR, p.replace("/", "_").to_uppercase()), path);
+            }
+        }
     }
 }
 
