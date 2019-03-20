@@ -1,8 +1,5 @@
 .DS_Store
-
-/target
-**/*.rs.bk
-
+/.idea
 /target
 **/*.rs.bk
 Cargo.lock

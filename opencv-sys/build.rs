@@ -8,6 +8,9 @@ use std::path::{Path, PathBuf};
 
 static OPENCV_LIB_DIR: &str = "OPENCV_LIB_DIR";
 static OPENCV_INCLUDE_DIR: &str = "OPENCV_INCLUDE_DIR";
+static DEFINE: &str = "RUSTCV_OPENCV_DEFINE_";
+static ENV: &str = "RUSTCV_OPENCV_ENV_";
+static RUSTCV_OPENCV_GIT_DIR: &str = "RUSTCV_OPENCV_GIT_DIR";
 
 #[cfg(unix)]
 fn opencv_link() {
@@ -249,12 +252,11 @@ fn build_opencv<P: AsRef<Path>>(_out_dir: P) {
                 cuda(&mut d);
             }
             d("BUILD_opencv_core", ON);
+            d("BUILD_SHARED_LIBS", OFF);
         }
         let manifest_dir =
             env::var("CARGO_MANIFEST_DIR").expect("Cargo should provide manifest directory!");
         let opencv_dir = manifest_dir + "/opencv";
-        static DEFINE: &str = "RUSTCV_OPENCV_DEFINE_";
-        static ENV: &str = "RUSTCV_OPENCV_ENV_";
         let target = env::var("TARGET")
             .expect("Cargo should provide TARGET")
             .replace("-", "_")
@@ -262,13 +264,12 @@ fn build_opencv<P: AsRef<Path>>(_out_dir: P) {
         let define_target = format!("{}{}_", DEFINE, &target);
         let env_target = format!("{}{}_", ENV, &target);
         env::vars().for_each(|(k, v)| {
-            let v = v.replace("RUSTCV_OPENCV_GIT_DIR", &opencv_dir);
+            let v = v.replace(RUSTCV_OPENCV_GIT_DIR, &opencv_dir);
+            // Targets go first
             if k.starts_with(&define_target) {
-                println!("cargo:rerun-if-env-changed={}", &k);
                 let k = k.replace(&define_target, "");
                 defines.insert(k, v);
             } else if k.starts_with(DEFINE) {
-                println!("cargo:rerun-if-env-changed={}", &k);
                 let k = k.replace(DEFINE, "");
                 defines.insert(k, v);
             } else if k.starts_with(&env_target) {
@@ -281,10 +282,9 @@ fn build_opencv<P: AsRef<Path>>(_out_dir: P) {
                 config.env(k, v);
             }
         });
-        // Statically link the libraries and override whatever may have been passed in.
-        defines.insert("BUILD_SHARED_LIBS".into(), "OFF".into());
         defines.into_iter().for_each(|(k, v)| {
             eprintln!("Defining {}={}", &k, &v);
+            println!("cargo:rerun-if-env-changed={}{}", DEFINE, &k);
             config.define(k, v);
         });
         let install_dir = _out_dir.as_ref().join("opencv");
