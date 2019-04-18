@@ -416,3 +416,9 @@ pub enum InterpolationFlag {
 pub fn resize(src: &Mat, dst: &mut Mat, sz: Size, fx: f64, fy: f64, interp: InterpolationFlag) {
     unsafe { ffi::Resize(src.inner, dst.inner, sz, fx, fy, interp as i32) }
 }
+
+/// Filter2D applies an arbitrary linear filter to an image.
+pub fn filter2D(src: &Mat, dst: &mut Mat, ddepth: i32, kernel: &Mat, anchor: Point, delta: f64, borderType: BorderType) {
+	unsafe { ffi::Filter2D(src.inner, dst.inner, ddepth, kernel.inner, anchor, delta, borderType as i32) }
+}
+

@@ -64,6 +64,8 @@ pub enum CvType {
     Cv64FC1 = 6,
     /// 8 bit, two channel (rarelly seen)
     Cv8UC2 = 8,
+    /// 16 bit signed, two channel (grey image)
+    Cv16SC2 = 11,
     /// 8 bit unsigned, three channels (RGB image)
     Cv8UC3 = 16,
     /// 8 bit signed, three channels (RGB image)
@@ -584,6 +586,18 @@ pub fn min_max_loc(input: &Mat) -> (f64, f64, Point, Point) {
     (min, max, min_loc, max_loc)
 }
 
+/// Raise the matrix to a power
+pub fn pow(src: &Mat, power: f64, dst: &mut Mat) {
+    unsafe { ffi::Mat_Pow(src.inner, power, dst.inner) }
+}
+
+/// Sqrt calculates a square root of array elements.
+pub fn sqrt(src: &Mat) -> Mat {
+    let mut m = Mat::new();
+    unsafe { m.inner = ffi::Mat_Sqrt(src.inner); }
+    return m
+}
+
 fn to_byte_array(buf: &mut [u8]) -> ffi::ByteArray {
     ffi::ByteArray {
         data: buf.as_mut_ptr() as *mut _,
@@ -615,7 +629,6 @@ impl Drop for Mats {
 //    }
 //}
 
-//pub fn Mats_get(mats: Mats, i: ::std::os::raw::c_int) -> Mat;
 impl Mats {
     /// Gets the mat at the given index
     pub fn get_mat(&self, index: i32) -> Mat {
@@ -628,4 +641,16 @@ impl Mats {
     pub fn size(&self) -> i32 {
         self.inner.length
     }
+}
+
+/// Split creates an array of single channel images from a multi-channel image
+pub fn split(src: &Mat) -> Mats {
+    let total_length = src.channels() as usize;
+    let mut mats_: Vec<*mut ::std::os::raw::c_void> = Vec::with_capacity(total_length);
+    let mut mats = ffi::Mats {
+        mats: mats_.as_mut_ptr(),
+        length: total_length as i32,
+    };
+    unsafe { ffi::Mat_Split(src.inner, &mut mats) }
+    Mats{inner: mats}
 }
