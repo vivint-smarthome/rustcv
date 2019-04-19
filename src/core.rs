@@ -64,6 +64,8 @@ pub enum CvType {
     Cv64FC1 = 6,
     /// 8 bit, two channel (rarelly seen)
     Cv8UC2 = 8,
+    /// 16 bit signed, two channel (grey image)
+    Cv16SC2 = 11,
     /// 8 bit unsigned, three channels (RGB image)
     Cv8UC3 = 16,
     /// 8 bit signed, three channels (RGB image)
@@ -78,6 +80,28 @@ pub enum CvType {
     Cv32FC3 = 21,
     /// 32 bit float, three channels (RGB image)
     Cv64FC3 = 22,
+}
+
+/// Here is the `CvDepth` in an easy-to-read table.
+#[repr(C)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, FromPrimitive)]
+pub enum CvDepth {
+    /// When a depth is required many functions allow use of the same format the input provides
+    CvSame = -1,
+    /// 8 bit unsigned
+    Cv8U = 0,
+    /// 8 bit signed
+    Cv8S = 1,
+    /// 16 bit unsigned
+    Cv16U = 2,
+    /// 16 bit signed
+    Cv16S = 3,
+    /// 32 bit signed
+    Cv32S = 4,
+    /// 32 bit floating point
+    Cv32F = 5,
+    /// 64 bit floating point
+    Cv64F = 6,
 }
 
 /// Various border types, image boundaries are denoted with `|`.
@@ -130,6 +154,13 @@ impl Mat {
     pub fn new_from_scalar(s: Scalar, t: CvType) -> Mat {
         Mat {
             inner: unsafe { ffi::Mat_NewFromScalar(s, t as i32) },
+        }
+    }
+
+    /// Creates an empty `Mat` struct with a constant scalar.
+    pub fn new_with_size_from_scalar(s: Scalar, rows: i32, cols: i32, t: CvType) -> Mat {
+        Mat {
+            inner: unsafe { ffi::Mat_NewWithSizeFromScalar(s, rows, cols, t as i32) },
         }
     }
 
@@ -584,15 +615,44 @@ pub fn min_max_loc(input: &Mat) -> (f64, f64, Point, Point) {
     (min, max, min_loc, max_loc)
 }
 
+/// Raise the matrix to a power
+pub fn pow(src: &Mat, power: f64, dst: &mut Mat) {
+    unsafe { ffi::Mat_Pow(src.inner, power, dst.inner) }
+}
+
+/// sqrt calculates a square root of array elements.
+pub fn sqrt(src: &Mat) -> Mat {
+    Mat {inner: unsafe { ffi::Mat_Sqrt(src.inner) }}
+}
+
+/// magnitude calculates the magnitude of 2D vectors.
+pub fn magnitude(x: &Mat, y: &Mat, magnitude: &mut Mat) {
+	unsafe { ffi::Mat_Magnitude(x.inner, y.inner, magnitude.inner) }
+}
+
+/// phase calculates the rotation angle of 2D vectors.
+pub fn phase(x: &Mat, y: &Mat, angle: &mut Mat, angle_in_degrees: bool) {
+	unsafe { ffi::Mat_Phase(x.inner, y.inner, angle.inner, angle_in_degrees) }
+}
+
+/// polar_to_cart calculates x and y coordinates of 2D vectors from their magnitude and angle.
+pub fn polar_to_cart(magnitude: &Mat, degree: &Mat, x: &mut Mat, y: &mut Mat, angle_in_degrees: bool) {
+	unsafe { ffi::Mat_PolarToCart(magnitude.inner, degree.inner, x.inner, y.inner, angle_in_degrees) }
+}
+
+// c_char is a u8 on aarch64
+#[allow(trivial_casts)]
 fn to_byte_array(buf: &mut [u8]) -> ffi::ByteArray {
     ffi::ByteArray {
-        data: buf.as_mut_ptr() as *mut _,
+        data: buf.as_mut_ptr() as *mut ::std::os::raw::c_char,
         length: buf.len() as i32,
     }
 }
 
+// c_char is a u8 on aarch64
+#[allow(trivial_casts)]
 fn from_byte_array(arr: &ffi::ByteArray) -> Vec<u8> {
-    unsafe { Vec::from_raw_parts(arr.data as *mut _, arr.length as usize, arr.length as usize) }
+    unsafe { Vec::from_raw_parts(arr.data as *mut u8, arr.length as usize, arr.length as usize) }
 }
 
 /// A data structure of multiple Mat
@@ -615,7 +675,6 @@ impl Drop for Mats {
 //    }
 //}
 
-//pub fn Mats_get(mats: Mats, i: ::std::os::raw::c_int) -> Mat;
 impl Mats {
     /// Gets the mat at the given index
     pub fn get_mat(&self, index: i32) -> Mat {
@@ -628,4 +687,12 @@ impl Mats {
     pub fn size(&self) -> i32 {
         self.inner.length
     }
+}
+
+/// Split creates an array of single channel images from a multi-channel image
+pub fn split(src: &Mat) -> Mats {
+    let total_length = src.channels() as usize;
+    let mut mats = ffi::Mats::new_of_len(total_length);
+    unsafe { ffi::Mat_Split(src.inner, &mut mats) }
+    Mats{inner: mats}
 }
