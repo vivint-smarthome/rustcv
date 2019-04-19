@@ -418,7 +418,7 @@ pub fn resize(src: &Mat, dst: &mut Mat, sz: Size, fx: f64, fy: f64, interp: Inte
 }
 
 /// Filter2D applies an arbitrary linear filter to an image.
-pub fn filter_2D(src: &Mat, dst: &mut Mat, ddepth: CvDepth, kernel: &Mat, anchor: Point, delta: f64, border_type: BorderType) {
+pub fn filter_2d(src: &Mat, dst: &mut Mat, ddepth: CvDepth, kernel: &Mat, anchor: Point, delta: f64, border_type: BorderType) {
 	unsafe { ffi::Filter2D(src.inner, dst.inner, ddepth as i32, kernel.inner, anchor, delta, border_type as i32) }
 }
 

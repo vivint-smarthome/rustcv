@@ -108,14 +108,8 @@ impl Net {
             length: total_length as i32,
         };
 
-        let mut mats_: Vec<*mut ::std::os::raw::c_void> = Vec::with_capacity(total_length);
-        let mut mats = ffi::Mats {
-            mats: mats_.as_mut_ptr(),
-            length: total_length as i32,
-        };
-        //let mut mats_ptr : *mut ffi::Mats = &mats;
+        let mut mats = ffi::Mats::new_of_len(total_length);
         unsafe { ffi::Net_ForwardLayers(self.inner, &mut mats, names) };
-        //ffi::Net_ForwardLayers(self.inner, mats_ptr, names);
         Ok(Mats { inner: mats })
     }
 

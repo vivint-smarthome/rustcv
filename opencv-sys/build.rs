@@ -8,9 +8,6 @@ use std::path::{Path, PathBuf};
 
 static OPENCV_LIB_DIR: &str = "OPENCV_LIB_DIR";
 static OPENCV_INCLUDE_DIR: &str = "OPENCV_INCLUDE_DIR";
-static DEFINE: &str = "RUSTCV_OPENCV_DEFINE_";
-static ENV: &str = "RUSTCV_OPENCV_ENV_";
-static RUSTCV_OPENCV_GIT_DIR: &str = "RUSTCV_OPENCV_GIT_DIR";
 
 #[cfg(unix)]
 fn opencv_link() {
@@ -72,6 +69,9 @@ fn generate_binding<P: AsRef<Path>>(out_dir: P, modules: &[&str]) {
 fn build_opencv<P: AsRef<Path>>(_out_dir: P) {
     #[cfg(feature = "build-opencv")]
     {
+        static DEFINE: &str = "RUSTCV_OPENCV_DEFINE_";
+        static ENV: &str = "RUSTCV_OPENCV_ENV_";
+        static RUSTCV_OPENCV_GIT_DIR: &str = "RUSTCV_OPENCV_GIT_DIR";
         use std::collections::HashMap;
         static ON: &str = "ON";
         static OFF: &str = "OFF";
