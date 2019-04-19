@@ -82,6 +82,28 @@ pub enum CvType {
     Cv64FC3 = 22,
 }
 
+/// Here is the `CvDepth` in an easy-to-read table.
+#[repr(C)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, FromPrimitive)]
+pub enum CvDepth {
+    /// When a depth is required many functions allow use of the same format the input provides
+    CvSame = -1,
+    /// 8 bit unsigned
+    Cv8U = 0,
+    /// 8 bit signed
+    Cv8S = 1,
+    /// 16 bit unsigned
+    Cv16U = 2,
+    /// 16 bit signed
+    Cv16S = 3,
+    /// 32 bit signed
+    Cv32S = 4,
+    /// 32 bit floating point
+    Cv32F = 5,
+    /// 64 bit floating point
+    Cv64F = 6,
+}
+
 /// Various border types, image boundaries are denoted with `|`.
 #[derive(Debug, Copy, Clone)]
 pub enum BorderType {
@@ -132,6 +154,13 @@ impl Mat {
     pub fn new_from_scalar(s: Scalar, t: CvType) -> Mat {
         Mat {
             inner: unsafe { ffi::Mat_NewFromScalar(s, t as i32) },
+        }
+    }
+
+    /// Creates an empty `Mat` struct with a constant scalar.
+    pub fn new_with_size_from_scalar(s: Scalar, rows: i32, cols: i32, t: CvType) -> Mat {
+        Mat {
+            inner: unsafe { ffi::Mat_NewWithSizeFromScalar(s, rows, cols, t as i32) },
         }
     }
 
@@ -591,11 +620,24 @@ pub fn pow(src: &Mat, power: f64, dst: &mut Mat) {
     unsafe { ffi::Mat_Pow(src.inner, power, dst.inner) }
 }
 
-/// Sqrt calculates a square root of array elements.
+/// sqrt calculates a square root of array elements.
 pub fn sqrt(src: &Mat) -> Mat {
-    let mut m = Mat::new();
-    unsafe { m.inner = ffi::Mat_Sqrt(src.inner); }
-    return m
+    Mat {inner: unsafe { ffi::Mat_Sqrt(src.inner) }}
+}
+
+/// magnitude calculates the magnitude of 2D vectors.
+pub fn magnitude(x: &Mat, y: &Mat, magnitude: &mut Mat) {
+	unsafe { ffi::Mat_Magnitude(x.inner, y.inner, magnitude.inner) }
+}
+
+/// phase calculates the rotation angle of 2D vectors.
+pub fn phase(x: &Mat, y: &Mat, angle: &mut Mat, angle_in_degrees: bool) {
+	unsafe { ffi::Mat_Phase(x.inner, y.inner, angle.inner, angle_in_degrees) }
+}
+
+/// polar_to_cart calculates x and y coordinates of 2D vectors from their magnitude and angle.
+pub fn polar_to_cart(magnitude: &Mat, degree: &Mat, x: &mut Mat, y: &mut Mat, angle_in_degrees: bool) {
+	unsafe { ffi::Mat_PolarToCart(magnitude.inner, degree.inner, x.inner, y.inner, angle_in_degrees) }
 }
 
 fn to_byte_array(buf: &mut [u8]) -> ffi::ByteArray {

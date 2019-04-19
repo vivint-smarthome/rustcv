@@ -1,6 +1,6 @@
 //! [Image Processing](https://docs.opencv.org/master/d7/dbd/group__imgproc.html)
 
-use crate::core::{BorderType, Mat, Point, Rect, Scalar, Size};
+use crate::core::{BorderType, Mat, Point, Rect, Scalar, Size, CvDepth};
 use opencv_sys as ffi;
 
 fn to_points(curve: &mut [Point]) -> ffi::Points {
@@ -418,7 +418,7 @@ pub fn resize(src: &Mat, dst: &mut Mat, sz: Size, fx: f64, fy: f64, interp: Inte
 }
 
 /// Filter2D applies an arbitrary linear filter to an image.
-pub fn filter2D(src: &Mat, dst: &mut Mat, ddepth: i32, kernel: &Mat, anchor: Point, delta: f64, borderType: BorderType) {
-	unsafe { ffi::Filter2D(src.inner, dst.inner, ddepth, kernel.inner, anchor, delta, borderType as i32) }
+pub fn filter_2D(src: &Mat, dst: &mut Mat, ddepth: CvDepth, kernel: &Mat, anchor: Point, delta: f64, border_type: BorderType) {
+	unsafe { ffi::Filter2D(src.inner, dst.inner, ddepth as i32, kernel.inner, anchor, delta, border_type as i32) }
 }
 
