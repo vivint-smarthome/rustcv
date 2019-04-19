@@ -640,15 +640,19 @@ pub fn polar_to_cart(magnitude: &Mat, degree: &Mat, x: &mut Mat, y: &mut Mat, an
 	unsafe { ffi::Mat_PolarToCart(magnitude.inner, degree.inner, x.inner, y.inner, angle_in_degrees) }
 }
 
+// c_char is a u8 on aarch64
+#[allow(trivial_casts)]
 fn to_byte_array(buf: &mut [u8]) -> ffi::ByteArray {
     ffi::ByteArray {
-        data: buf.as_mut_ptr() as *mut _,
+        data: buf.as_mut_ptr() as *mut ::std::os::raw::c_char,
         length: buf.len() as i32,
     }
 }
 
+// c_char is a u8 on aarch64
+#[allow(trivial_casts)]
 fn from_byte_array(arr: &ffi::ByteArray) -> Vec<u8> {
-    unsafe { Vec::from_raw_parts(arr.data as *mut _, arr.length as usize, arr.length as usize) }
+    unsafe { Vec::from_raw_parts(arr.data as *mut u8, arr.length as usize, arr.length as usize) }
 }
 
 /// A data structure of multiple Mat
