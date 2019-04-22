@@ -298,11 +298,19 @@ fn build_opencv<P: AsRef<Path>>(_out_dir: P) {
         let dst = config.build();
 
         env::set_var(OPENCV_INCLUDE_DIR, dst.join("include"));
-        let paths = vec!["lib", "lib64", "share/OpenCV/3rdparty/lib", "share/OpenCV/3rdparty/lib64"];
+        let paths = vec![
+            "lib",
+            "lib64",
+            "share/OpenCV/3rdparty/lib",
+            "share/OpenCV/3rdparty/lib64",
+        ];
         for p in paths {
             let path = dst.join(p);
             if path.exists() {
-                env::set_var(format!("{}_{}", OPENCV_LIB_DIR, p.replace("/", "_").to_uppercase()), path);
+                env::set_var(
+                    format!("{}_{}", OPENCV_LIB_DIR, p.replace("/", "_").to_uppercase()),
+                    path,
+                );
             }
         }
     }

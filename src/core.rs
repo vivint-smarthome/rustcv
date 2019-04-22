@@ -62,10 +62,12 @@ pub enum CvType {
     Cv32FC1 = 5,
     /// 32 bit float, single channel (grey image)
     Cv64FC1 = 6,
-    /// 8 bit, two channel (rarelly seen)
+    /// 8 bit, two channel
     Cv8UC2 = 8,
-    /// 16 bit signed, two channel (grey image)
+    /// 16 bit signed, two channel
     Cv16SC2 = 11,
+    /// 32 bit float, two channel
+    Cv32FC2 = 13,
     /// 8 bit unsigned, three channels (RGB image)
     Cv8UC3 = 16,
     /// 8 bit signed, three channels (RGB image)
@@ -622,22 +624,38 @@ pub fn pow(src: &Mat, power: f64, dst: &mut Mat) {
 
 /// sqrt calculates a square root of array elements.
 pub fn sqrt(src: &Mat) -> Mat {
-    Mat {inner: unsafe { ffi::Mat_Sqrt(src.inner) }}
+    Mat {
+        inner: unsafe { ffi::Mat_Sqrt(src.inner) },
+    }
 }
 
 /// magnitude calculates the magnitude of 2D vectors.
 pub fn magnitude(x: &Mat, y: &Mat, magnitude: &mut Mat) {
-	unsafe { ffi::Mat_Magnitude(x.inner, y.inner, magnitude.inner) }
+    unsafe { ffi::Mat_Magnitude(x.inner, y.inner, magnitude.inner) }
 }
 
 /// phase calculates the rotation angle of 2D vectors.
 pub fn phase(x: &Mat, y: &Mat, angle: &mut Mat, angle_in_degrees: bool) {
-	unsafe { ffi::Mat_Phase(x.inner, y.inner, angle.inner, angle_in_degrees) }
+    unsafe { ffi::Mat_Phase(x.inner, y.inner, angle.inner, angle_in_degrees) }
 }
 
 /// polar_to_cart calculates x and y coordinates of 2D vectors from their magnitude and angle.
-pub fn polar_to_cart(magnitude: &Mat, degree: &Mat, x: &mut Mat, y: &mut Mat, angle_in_degrees: bool) {
-	unsafe { ffi::Mat_PolarToCart(magnitude.inner, degree.inner, x.inner, y.inner, angle_in_degrees) }
+pub fn polar_to_cart(
+    magnitude: &Mat,
+    degree: &Mat,
+    x: &mut Mat,
+    y: &mut Mat,
+    angle_in_degrees: bool,
+) {
+    unsafe {
+        ffi::Mat_PolarToCart(
+            magnitude.inner,
+            degree.inner,
+            x.inner,
+            y.inner,
+            angle_in_degrees,
+        )
+    }
 }
 
 // c_char is a u8 on aarch64
@@ -652,7 +670,13 @@ fn to_byte_array(buf: &mut [u8]) -> ffi::ByteArray {
 // c_char is a u8 on aarch64
 #[allow(trivial_casts)]
 fn from_byte_array(arr: &ffi::ByteArray) -> Vec<u8> {
-    unsafe { Vec::from_raw_parts(arr.data as *mut u8, arr.length as usize, arr.length as usize) }
+    unsafe {
+        Vec::from_raw_parts(
+            arr.data as *mut u8,
+            arr.length as usize,
+            arr.length as usize,
+        )
+    }
 }
 
 /// A data structure of multiple Mat
@@ -694,5 +718,5 @@ pub fn split(src: &Mat) -> Mats {
     let total_length = src.channels() as usize;
     let mut mats = ffi::Mats::new_of_len(total_length);
     unsafe { ffi::Mat_Split(src.inner, &mut mats) }
-    Mats{inner: mats}
+    Mats { inner: mats }
 }
