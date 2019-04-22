@@ -1,6 +1,6 @@
 //! [Image Processing](https://docs.opencv.org/master/d7/dbd/group__imgproc.html)
 
-use crate::core::{BorderType, Mat, Point, Rect, Scalar, Size, CvDepth};
+use crate::core::{BorderType, Mat, Point, Rect, Scalar, Size, CvDepth, Mats};
 use opencv_sys as ffi;
 
 fn to_points(curve: &mut [Point]) -> ffi::Points {
@@ -417,8 +417,62 @@ pub fn resize(src: &Mat, dst: &mut Mat, sz: Size, fx: f64, fy: f64, interp: Inte
     unsafe { ffi::Resize(src.inner, dst.inner, sz, fx, fy, interp as i32) }
 }
 
-/// Filter2D applies an arbitrary linear filter to an image.
+/// filter_2d applies an arbitrary linear filter to an image.
 pub fn filter_2d(src: &Mat, dst: &mut Mat, ddepth: CvDepth, kernel: &Mat, anchor: Point, delta: f64, border_type: BorderType) {
 	unsafe { ffi::Filter2D(src.inner, dst.inner, ddepth as i32, kernel.inner, anchor, delta, border_type as i32) }
 }
 
+/// blur blurs an image Mat using a normalized box filter.
+pub fn blur(src: &Mat, dst: &mut Mat, ksize: Size) {
+	unsafe { ffi::Blur(src.inner, dst.inner, ksize) }
+}
+
+/// box_filter blurs an image using the box filter.
+pub fn box_filter(src: &Mat, dst: &mut Mat, ddepth: CvDepth, ksize: Size) {
+	unsafe { ffi::BoxFilter(src.inner, dst.inner, ddepth as i32, ksize) }
+}
+
+/// sq_box_filter calculates the normalized sum of squares of the pixel values overlapping the filter.
+pub fn sq_box_filter(src: &Mat, dst: &mut Mat, ddepth: CvDepth, ksize: Size) {
+	unsafe { ffi::SqBoxFilter(src.inner, dst.inner, ddepth as i32, ksize) }
+}
+
+/// bilateral_filter applies a bilateral filter to an image.
+pub fn bilateral_filter(src: &Mat, dst: &Mat, diameter: i32, sigma_color: f64, sigma_space: f64) {
+	unsafe { ffi::BilateralFilter(src.inner, dst.inner, diameter, sigma_color, sigma_space) }
+}
+
+/// sep_filter_2d applies a separable linear filter to the image.
+#[allow(clippy::too_many_arguments)]
+pub fn sep_filter_2d(src: &Mat, dst: &mut Mat, ddepth: CvDepth, kernel_x: &Mat, kernel_y: &Mat, anchor: Point, delta: f64, border_type: BorderType) {
+	unsafe { ffi::SepFilter2D(src.inner, dst.inner, ddepth as i32, kernel_x.inner, kernel_y.inner, anchor, delta, border_type as i32) }
+}
+
+/// calc_hist Calculates a histogram of a set of images
+#[allow(clippy::too_many_arguments)]
+pub fn calc_hist(src: Mats, channels: &mut Vec<i32>, mask: &Mat, hist: &mut Mat, size: &mut Vec<i32>, ranges: &mut Vec<f32>, acc: bool) {
+    let channels_vector = ffi::IntVector {
+        val: channels.as_mut_ptr(),
+        length: channels.len() as i32,
+    };
+    let size_vector = ffi::IntVector {
+        val: size.as_mut_ptr(),
+        length: size.len() as i32,
+    };
+    let ranges_vector = ffi::FloatVector {
+        val: ranges.as_mut_ptr(),
+        length: ranges.len() as i32,
+    };
+	unsafe { ffi::CalcHist(src.inner, channels_vector, mask.inner, hist.inner, size_vector, ranges_vector, acc) }
+}
+
+/// sobel calculates the first, second, third, or mixed image derivatives using an extended Sobel operator
+#[allow(clippy::too_many_arguments)]
+pub fn sobel(src: &Mat, dst: &mut Mat, ddepth: i32, dx: i32, dy: i32, ksize: i32, scale: f64, delta: f64, border_type: BorderType) {
+	unsafe { ffi::Sobel(src.inner, dst.inner, ddepth, dx, dy, ksize, scale, delta, border_type as i32) }
+}
+
+/// spatial_gradient calculates the first order image derivative in both x and y using a Sobel operator.
+pub fn spatial_gradient(src: &Mat, dx: &mut Mat, dy: &mut Mat, ksize: i32, border_type: BorderType) {
+	unsafe { ffi::SpatialGradient(src.inner, dx.inner, dy.inner, ksize, border_type as i32) }
+}
