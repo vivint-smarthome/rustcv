@@ -720,3 +720,13 @@ pub fn split(src: &Mat) -> Mats {
     unsafe { ffi::Mat_Split(src.inner, &mut mats) }
     Mats { inner: mats }
 }
+
+/// max calculates per-element maximum of two arrays or an array and a scalar.
+pub fn max(src1: &Mat, src2: &Mat, dst: &mut Mat) {
+    unsafe { ffi::Mat_Max(src1.inner, src2.inner, dst.inner) }
+}
+
+/// min calculates per-element minimum of two arrays or an array and a scalar.
+pub fn min(src1: &Mat, src2: &Mat, dst: &mut Mat) {
+    unsafe { ffi::Mat_Min(src1.inner, src2.inner, dst.inner) }
+}
