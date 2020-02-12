@@ -43,7 +43,7 @@ fn opencv_link() {
 fn generate_binding<P: AsRef<Path>>(out_dir: P, modules: &[&str]) {
     let mut builder = bindgen::builder();
 
-    'modules: for m in modules.iter().chain(once(&"version")) {
+    for m in modules.iter().chain(once(&"version")) {
         let paths = vec![
             format!("gocv/{}.h", m),
             format!("gocv/{}_gocv.h", m),
