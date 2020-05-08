@@ -29,13 +29,21 @@ fn opencv_link() {
         Ok(())
     }
 
-    for (k, lib_dir) in env::vars().filter(|(k, _)| k.starts_with(OPENCV_LIB_DIR)) {
+    let target_lib_dir = format!(
+        "{}_{}",
+        std::env::var("TARGET")
+            .expect("Cargo should provide TARGET")
+            .replace("-", "_")
+          .to_ascii_uppercase(),
+        OPENCV_LIB_DIR
+    );
+    for (k, lib_dir) in
+        env::vars().filter(|(k, _)| k.starts_with(OPENCV_LIB_DIR) || k.starts_with(&target_lib_dir))
+    {
         println!("cargo:rustc-link-search=native={}", &lib_dir);
         println!("cargo:rerun-if-env-changed={}", k);
         link_all_in_directory(&lib_dir).unwrap_or_else(|e| {
-            if !cfg!(feature = "build-opencv") {
-                eprintln!("Unable to read dir {}! {}", &lib_dir, e);
-            }
+            eprintln!("Unable to read dir {}! {}", &lib_dir, e);
         });
     }
 }
@@ -366,11 +374,22 @@ fn main() {
         .warnings(false)
         .cpp(true)
         .files(sources);
-    env::var(OPENCV_INCLUDE_DIR).ok().map(|dir| {
-        println!("cargo:rerun-if-env-changed={}", OPENCV_INCLUDE_DIR);
-        eprintln!("Including dir {}", dir);
-        builder.include(dir)
-    });
+    let target_include_dir = format!(
+        "{}_{}",
+        std::env::var("TARGET")
+            .expect("Cargo should provide TARGET")
+            .replace("-", "_")
+          .to_ascii_uppercase(),
+        OPENCV_INCLUDE_DIR
+    );
+    env::vars()
+      .inspect(|(k, v)|println!("vars: {}={}", k, v))
+        .filter(|(k, _)| k.starts_with(OPENCV_INCLUDE_DIR) || k.starts_with(&target_include_dir))
+        .for_each(|(env, dir)| {
+            println!("cargo:rerun-if-env-changed={}", env);
+            eprintln!("Including dir {}", dir);
+            builder.include(dir);
+        });
     builder.compile("cv");
 
     opencv_link();
